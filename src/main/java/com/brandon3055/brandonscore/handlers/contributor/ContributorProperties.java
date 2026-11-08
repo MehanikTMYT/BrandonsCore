@@ -8,8 +8,7 @@ import com.brandon3055.brandonscore.handlers.contributor.ContributorConfig.Badge
 import com.brandon3055.brandonscore.init.ClientInit;
 import com.brandon3055.brandonscore.network.BCoreNetwork;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
+import net.neoforged.api.distmarker.Dist;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;

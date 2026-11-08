@@ -2,12 +2,12 @@ package com.brandon3055.brandonscore;
 
 import com.brandon3055.brandonscore.inventory.ContainerPlayerAccess;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraftforge.common.extensions.IForgeMenuType;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.ObjectHolder;
-import net.minecraftforge.registries.RegisterEvent;
+import net.neoforged.neoforge.common.extensions.IForgeMenuType;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.registries.ObjectHolder;
+import net.neoforged.neoforge.registries.RegisterEvent;
 
 import static com.brandon3055.brandonscore.BrandonsCore.MODID;
 

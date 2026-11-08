@@ -1,9 +1,9 @@
 package com.brandon3055.brandonscore.handlers;
 
 import net.covers1624.quack.util.CrashLock;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.server.ServerStoppedEvent;
+import net.neoforged.neoforge.common.MinecraftForge;
+import net.neoforged.event.TickEvent;
+import net.neoforged.event.server.ServerStoppedEvent;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -26,8 +26,8 @@ public class ProcessHandler {
     public static void init() {
         LOCK.lock();
 
-        MinecraftForge.EVENT_BUS.addListener(ProcessHandler::onServerTick);
-        MinecraftForge.EVENT_BUS.addListener(ProcessHandler::onServerStop);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(ProcessHandler::onServerTick);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(ProcessHandler::onServerStop);
     }
 
     public static void onServerTick(TickEvent.ServerTickEvent event) {

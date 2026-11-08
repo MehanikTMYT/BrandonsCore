@@ -42,7 +42,7 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.network.chat.*;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
@@ -65,13 +65,13 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.EventBus;
-import net.minecraftforge.eventbus.api.Event;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.IEventListener;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
+import net.neoforged.neoforge.common.MinecraftForge;
+import net.neoforged.eventbus.EventBus;
+import net.neoforged.bus.api.Event;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.IEventListener;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.util.ObfuscationReflectionHelper;
 import org.apache.commons.io.IOUtils;
 
 import javax.annotation.Nullable;
@@ -394,7 +394,7 @@ public class BCUtilCommands {
 
     public static int dumpEventListeners(CommandSourceStack source) throws CommandRuntimeException {
         Map<String, Map<Class<?>, List<Pair<EventPriority, Method>>>> eventListenerMap = new HashMap<>();
-        dumpBus("EVENT_BUS", (EventBus) MinecraftForge.EVENT_BUS, eventListenerMap);
+        dumpBus("EVENT_BUS", (EventBus) net.neoforged.neoforge.common.NeoForge.EVENT_BUS, eventListenerMap);
 //        dumpBus("ORE_GEN_BUS", MinecraftForge.ORE_GEN_BUS, eventListenerMap);
 //        dumpBus("TERRAIN_GEN_BUS", MinecraftForge.TERRAIN_GEN_BUS, eventListenerMap);
 
@@ -705,7 +705,7 @@ public class BCUtilCommands {
 //        player.openContainer = new ContainerPlayerAccess(player, playerAccess, server);
 //        player.openContainer.windowId = windowId;
 //        player.openContainer.addListener(player);
-        net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new net.minecraftforge.event.entity.player.PlayerContainerEvent.Open(player, player.containerMenu));
+        net.neoforged.neoforge.common.net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(new net.neoforged.event.entity.player.PlayerContainerEvent.Open(player, player.containerMenu));
     }
 
 //    public static class OfflinePlayer extends PlayerEntity {

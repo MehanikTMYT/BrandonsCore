@@ -15,7 +15,7 @@ import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MessageSignature;
 import net.minecraft.network.protocol.Packet;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
@@ -24,9 +24,9 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.network.NetworkDirection;
-import net.minecraftforge.network.event.EventNetworkChannel;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.network.NetworkDirection;
+import net.neoforged.network.event.EventNetworkChannel;
+import net.neoforged.neoforge.registries.ForgeRegistries;
 
 import java.util.Map;
 
@@ -106,7 +106,7 @@ public class BCoreNetwork {
     }
 
     public static void sendSound(Level world, BlockPos pos, SoundEvent sound, SoundSource category, float volume, float pitch, boolean distanceDelay) {
-        if (!world.isClientSide) {
+        if (!world.isClientSide()) {
             PacketCustom packet = new PacketCustom(CHANNEL, C_PLAY_SOUND);
             packet.writePos(pos);
             packet.writeRegistryId(ForgeRegistries.SOUND_EVENTS, sound);
@@ -119,7 +119,7 @@ public class BCoreNetwork {
     }
 
     public static void sendParticle(Level world, ParticleOptions particleData, Vector3 pos, Vector3 motion, boolean distanceOverride) {
-        if (!world.isClientSide) {
+        if (!world.isClientSide()) {
             PacketCustom packet = new PacketCustom(CHANNEL, C_SPAWN_PARTICLE);
             packet.writeRegistryId(ForgeRegistries.PARTICLE_TYPES, particleData.getType());
             particleData.writeToNetwork(packet.toPacketBuffer());

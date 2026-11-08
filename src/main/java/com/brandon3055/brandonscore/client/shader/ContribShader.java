@@ -3,7 +3,7 @@ package com.brandon3055.brandonscore.client.shader;
 import codechicken.lib.render.shader.CCUniform;
 import com.brandon3055.brandonscore.BrandonsCore;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.Objects;
 

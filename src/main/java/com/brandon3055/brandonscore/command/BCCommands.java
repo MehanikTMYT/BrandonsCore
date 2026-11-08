@@ -4,9 +4,9 @@ import com.brandon3055.brandonscore.BCConfig;
 import com.mojang.brigadier.CommandDispatcher;
 import net.covers1624.quack.util.CrashLock;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraftforge.client.event.RegisterClientCommandsEvent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.RegisterCommandsEvent;
+import net.neoforged.client.event.RegisterClientCommandsEvent;
+import net.neoforged.neoforge.common.MinecraftForge;
+import net.neoforged.event.RegisterCommandsEvent;
 
 /**
  * Created by brandon3055 on 15/11/2022
@@ -18,8 +18,8 @@ public class BCCommands {
     public static void init() {
         LOCK.lock();
 
-        MinecraftForge.EVENT_BUS.addListener(BCCommands::registerServerCommands);
-        MinecraftForge.EVENT_BUS.addListener(BCCommands::registerClientCommands);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(BCCommands::registerServerCommands);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(BCCommands::registerClientCommands);
     }
 
     private static void registerServerCommands(RegisterCommandsEvent event) {

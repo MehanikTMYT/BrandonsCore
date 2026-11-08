@@ -17,7 +17,7 @@
 //import net.minecraft.nbt.JsonToNBT;
 //
 //import net.minecraft.nbt.CompoundNBT;
-//import net.minecraftforge.common.MinecraftForge;
+//import net.neoforged.neoforge.common.MinecraftForge;
 //
 //import org.apache.commons.io.IOUtils;
 //
@@ -110,7 +110,7 @@
 //            this.fileDirectory = fileDirectory;
 //        }
 //        if (registerEventHandler) {
-//            MinecraftForge.EVENT_BUS.register(this);
+//            net.neoforged.neoforge.common.NeoForge.EVENT_BUS.register(this);
 //        }
 //        contributorFile = new File(this.fileDirectory, modid + "-Contributors.json");
 //        startContributorDownload();

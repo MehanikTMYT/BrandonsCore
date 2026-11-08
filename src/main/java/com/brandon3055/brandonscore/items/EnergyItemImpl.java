@@ -3,7 +3,7 @@ package com.brandon3055.brandonscore.items;
 import com.brandon3055.brandonscore.capability.MultiCapabilityProvider;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.extensions.IForgeItem;
+import net.neoforged.neoforge.common.extensions.IForgeItem;
 
 import javax.annotation.Nullable;
 

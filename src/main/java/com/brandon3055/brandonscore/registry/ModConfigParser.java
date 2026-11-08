@@ -17,14 +17,14 @@
 //import net.minecraft.util.text.TextFormatting;
 //import net.minecraft.util.text.event.ClickEvent;
 //import net.minecraft.util.text.event.HoverEvent;
-//import net.minecraftforge.common.config.ConfigCategory;
-//import net.minecraftforge.common.config.Configuration;
-//import net.minecraftforge.common.config.Property;
-//import net.minecraftforge.fml.common.discovery.ASMDataTable;
-//import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-//import net.minecraftforge.fml.relauncher.ReflectionHelper;
-//import net.minecraftforge.fml.relauncher.Side;
-//import net.minecraftforge.fml.relauncher.SideOnly;
+//import net.neoforged.neoforge.common.config.ConfigCategory;
+//import net.neoforged.neoforge.common.config.Configuration;
+//import net.neoforged.neoforge.common.config.Property;
+//import net.neoforged.fml.common.discovery.ASMDataTable;
+//import net.neoforged.fml.common.event.FMLPreInitializationEvent;
+//import net.neoforged.fml.relauncher.ReflectionHelper;
+//import net.neoforged.fml.relauncher.Side;
+//import net.neoforged.fml.relauncher.SideOnly;
 //
 //import java.lang.reflect.Field;
 //import java.util.ArrayList;

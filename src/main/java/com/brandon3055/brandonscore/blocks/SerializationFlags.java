@@ -3,12 +3,12 @@ package com.brandon3055.brandonscore.blocks;
 import com.brandon3055.brandonscore.lib.IMCDataSerializable;
 import com.brandon3055.brandonscore.lib.IValueHashable;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraftforge.common.util.INBTSerializable;
+import com.brandon3055.brandonscore.lib.datamanager.BCSerializable;
 
 /**
  * Created by brandon3055 on 18/12/19.
  */
-public class SerializationFlags<D extends INBTSerializable<CompoundTag>> {
+public class SerializationFlags<D extends BCSerializable<CompoundTag>> {
     protected final String tagName;
     protected final D serializableInstance;
     protected Object lastData;

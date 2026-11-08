@@ -2,8 +2,8 @@
 //
 //import com.brandon3055.brandonscore.BrandonsCore;
 //import net.minecraft.client.Minecraft;
-//import net.minecraft.resources.ResourceLocation;
-//import net.minecraftforge.client.event.ScreenEvent;
+//import net.minecraft.resources.Identifier;
+//import net.neoforged.client.event.ScreenEvent;
 //import org.lwjgl.BufferUtils;
 //import org.lwjgl.glfw.GLFW;
 //import org.lwjgl.glfw.GLFWImage;

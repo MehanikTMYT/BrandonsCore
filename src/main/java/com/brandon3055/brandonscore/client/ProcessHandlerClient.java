@@ -3,10 +3,10 @@ package com.brandon3055.brandonscore.client;
 import com.brandon3055.brandonscore.handlers.IProcess;
 import com.brandon3055.brandonscore.utils.BCProfiler;
 import net.covers1624.quack.util.CrashLock;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.level.LevelEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.neoforge.common.MinecraftForge;
+import net.neoforged.event.TickEvent;
+import net.neoforged.event.level.LevelEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -33,7 +33,7 @@ public class ProcessHandlerClient {
 
     public static void init() {
         LOCK.lock();
-        MinecraftForge.EVENT_BUS.register(new ProcessHandlerClient());
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.register(new ProcessHandlerClient());
     }
 
     @SubscribeEvent

@@ -1,7 +1,7 @@
 package com.brandon3055.brandonscore.api.power;
 
 import com.brandon3055.brandonscore.capability.CapabilityOP;
-import net.minecraftforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.energy.IEnergyStorage;
 
 import javax.annotation.Nullable;
 
@@ -11,7 +11,7 @@ import javax.annotation.Nullable;
  * Operational Potential is the power system used by Draconic Evolution and related mods.
  * This system is an extension of Forge Energy that allows long based power transfer and storage.
  * <p>
- * When implementing this capability cap should be provided as both {@link net.minecraftforge.energy.CapabilityEnergy#ENERGY} and {@link CapabilityOP#OP}
+ * When implementing this capability cap should be provided as both {@link net.neoforged.neoforge.energy.CapabilityEnergy#ENERGY} and {@link CapabilityOP#OP}
  * So any mod that implements FE will find the FE cap and interact with it normally. However any mod that implements OP will fist check for the OP cap before falling back to RF.
  * <p>
  * When creating an energy storage that extends this you MUST override ether the fe, op or both sets of io/storage methods.

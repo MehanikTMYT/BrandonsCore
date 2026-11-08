@@ -4,7 +4,7 @@
 //import net.minecraft.client.renderer.texture.TextureAtlas;
 //import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 //import net.minecraft.client.resources.TextureAtlasHolder;
-//import net.minecraft.resources.ResourceLocation;
+//import net.minecraft.resources.Identifier;
 //import net.minecraft.server.packs.resources.ReloadableResourceManager;
 //import net.minecraft.server.packs.resources.ResourceManager;
 //import net.minecraft.util.profiling.ProfilerFiller;

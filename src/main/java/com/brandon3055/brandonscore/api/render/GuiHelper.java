@@ -21,10 +21,10 @@
 //import net.minecraft.client.renderer.texture.TextureAtlas;
 //import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 //import net.minecraft.client.resources.model.BakedModel;
-//import net.minecraft.resources.ResourceLocation;
+//import net.minecraft.resources.Identifier;
 //import net.minecraft.util.Mth;
 //import net.minecraft.world.item.ItemStack;
-//import net.minecraftforge.client.gui.ScreenUtils;
+//import net.neoforged.client.gui.ScreenUtils;
 //
 ///**
 // * Created by brandon3055 on 12/8/21

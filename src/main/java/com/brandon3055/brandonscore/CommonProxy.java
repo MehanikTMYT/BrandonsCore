@@ -12,7 +12,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.server.ServerLifecycleHooks;
+import net.neoforged.server.ServerLifecycleHooks;
 
 import java.nio.ByteBuffer;
 import java.util.UUID;

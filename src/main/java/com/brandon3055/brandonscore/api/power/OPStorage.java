@@ -9,7 +9,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NumericTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.common.util.INBTSerializable;
+import com.brandon3055.brandonscore.lib.datamanager.BCSerializable;
 
 import javax.annotation.Nullable;
 
@@ -19,10 +19,10 @@ import javax.annotation.Nullable;
  * Operational Potential is the power system used by Draconic Evolution and related mods.
  * This system is an extension of Forge Energy that allows long based power transfer and storage.
  * <p>
- * When implementing this capability cap should be provided as both {@link net.minecraftforge.energy.CapabilityEnergy#ENERGY} and {@link CapabilityOP#OP}
+ * When implementing this capability cap should be provided as both {@link net.neoforged.neoforge.energy.CapabilityEnergy#ENERGY} and {@link CapabilityOP#OP}
  * So any mod that implements FE will find the FE cap and interact with it normally. However any mod that implements OP will fist check for the OP cap before falling back to RF.
  */
-public class OPStorage implements INBTSerializable<CompoundTag>, IValueHashable<OPStorage.ComparableValue>, IMCDataSerializable, IOPStorage {
+public class OPStorage implements BCSerializable<CompoundTag>, IValueHashable<OPStorage.ComparableValue>, IMCDataSerializable, IOPStorage {
     protected Runnable changeListener;
     protected long energy;
     protected long capacity;

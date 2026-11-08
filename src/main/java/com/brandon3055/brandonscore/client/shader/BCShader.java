@@ -3,9 +3,9 @@ package com.brandon3055.brandonscore.client.shader;
 import codechicken.lib.render.shader.CCShaderInstance;
 import codechicken.lib.render.shader.CCUniform;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.client.event.RegisterShadersEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraft.resources.Identifier;
+import net.neoforged.client.event.RegisterShadersEvent;
+import net.neoforged.bus.api.IEventBus;
 
 import java.util.LinkedList;
 import java.util.List;

@@ -10,11 +10,11 @@ import net.minecraft.world.inventory.ContainerListener;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.wrapper.EmptyHandler;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import com.brandon3055.brandonscore.lib.Optional;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.wrapper.EmptyHandler;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -77,7 +77,7 @@ public class ContainerBCore extends ModularGuiContainerMenu {
 ////        if (slotLayout != null) {
 ////            playerSlots = slotLayout.getPlayerSlotCount();
 ////        }
-//        LazyOptional<IItemHandler> optional = getItemHandler();
+//        Optional<IItemHandler> optional = getItemHandler();
 //        if (optional.isPresent()) {
 //            IItemHandler handler = optional.orElse(EmptyHandler.INSTANCE);
 //            Slot slot = getSlot(i);
@@ -147,8 +147,8 @@ public class ContainerBCore extends ModularGuiContainerMenu {
 //    /**
 //     * @return the item handler for the tile entity.
 //     */
-//    public LazyOptional<IItemHandler> getItemHandler() {
-//        return LazyOptional.empty();
+//    public Optional<IItemHandler> getItemHandler() {
+//        return Optional.empty();
 //    }
 //
 ////    public ContainerSlotLayout getSlotLayout() {

@@ -2,10 +2,10 @@ package com.brandon3055.brandonscore.capability;
 
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ICapabilitySerializable;
-import net.minecraftforge.common.util.INBTSerializable;
-import net.minecraftforge.common.util.LazyOptional;
+import net.neoforged.neoforge.capabilities.Capability;
+import net.neoforged.neoforge.capabilities.ICapabilitySerializable;
+import com.brandon3055.brandonscore.lib.datamanager.BCSerializable;
+import com.brandon3055.brandonscore.lib.Optional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -19,15 +19,15 @@ import java.util.Objects;
 public class MultiCapabilityProvider implements ICapabilitySerializable<CompoundTag> {
 
     private Map<Capability<?>, Object> capabilityMap = new HashMap<>();
-    private Map<String, INBTSerializable<CompoundTag>> nameMap = new HashMap<>();
+    private Map<String, BCSerializable<CompoundTag>> nameMap = new HashMap<>();
 
     public MultiCapabilityProvider() {}
 
-    public MultiCapabilityProvider(INBTSerializable<CompoundTag> capInstance, String name, Capability<?>... capabilities) {
+    public MultiCapabilityProvider(BCSerializable<CompoundTag> capInstance, String name, Capability<?>... capabilities) {
         addCapability(capInstance, name, capabilities);
     }
 
-    public void addCapability(INBTSerializable<CompoundTag> capInstance, String name, Capability<?>... capabilities) {
+    public void addCapability(BCSerializable<CompoundTag> capInstance, String name, Capability<?>... capabilities) {
         if (CapabilityOP.OP == null) return;
         this.nameMap.put(name, capInstance);
         for (Capability<?> cap : capabilities) {
@@ -43,11 +43,11 @@ public class MultiCapabilityProvider implements ICapabilitySerializable<Compound
 
     @Nonnull
     @Override
-    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
+    public <T> Optional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
         if (capabilityMap.containsKey(cap)) {
-            return LazyOptional.of(() -> capabilityMap.get(cap)).cast();
+            return Optional.of(() -> capabilityMap.get(cap)).cast();
         }
-        return LazyOptional.empty();
+        return Optional.empty();
     }
 
     @Override

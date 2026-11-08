@@ -8,8 +8,8 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.IItemHandlerModifiable;
+import com.brandon3055.brandonscore.lib.Optional;
+import net.neoforged.neoforge.items.IItemHandlerModifiable;
 
 import javax.annotation.Nullable;
 import java.util.function.Predicate;
@@ -108,7 +108,7 @@ public class PlayerSlot {
             }
             player.getInventory().offhand.set(slot, stack);
         } else if (category == EnumInvCategory.EQUIPMENT && equipmentManager != null) {
-            LazyOptional<IItemHandlerModifiable> optional = equipmentManager.getInventory(player);
+            Optional<IItemHandlerModifiable> optional = equipmentManager.getInventory(player);
             if (optional.isPresent()) {
                 IItemHandlerModifiable handler = optional.orElseThrow(IllegalStateException::new);
                 if (slot < 0 || slot >= handler.getSlots()) {
@@ -140,7 +140,7 @@ public class PlayerSlot {
             }
         }
         if (equipmentManager != null) {
-            LazyOptional<IItemHandlerModifiable> optional = equipmentManager.getInventory(inv.player);
+            Optional<IItemHandlerModifiable> optional = equipmentManager.getInventory(inv.player);
             if (optional.isPresent()) {
                 IItemHandlerModifiable handler = optional.orElseThrow(IllegalStateException::new);
                 for (int i = 0; i < handler.getSlots(); i++) {
@@ -177,7 +177,7 @@ public class PlayerSlot {
             }
         }
         if (equipmentManager != null) {
-            LazyOptional<IItemHandlerModifiable> optional = equipmentManager.getInventory(inv.player);
+            Optional<IItemHandlerModifiable> optional = equipmentManager.getInventory(inv.player);
             if (optional.isPresent()) {
                 IItemHandlerModifiable handler = optional.orElseThrow(IllegalStateException::new);
                 for (int i = 0; i < handler.getSlots(); i++) {
@@ -218,7 +218,7 @@ public class PlayerSlot {
         } else if (category == EnumInvCategory.OFF_HAND) {
             return player.getInventory().offhand.get(slot);
         } else if (category == EnumInvCategory.EQUIPMENT && equipmentManager != null) {
-            LazyOptional<IItemHandlerModifiable> optional = equipmentManager.getInventory(player);
+            Optional<IItemHandlerModifiable> optional = equipmentManager.getInventory(player);
             if (optional.isPresent()) {
                 IItemHandlerModifiable handler = optional.orElseThrow(IllegalStateException::new);
                 return handler.getSlots() > slot ? handler.getStackInSlot(slot) : ItemStack.EMPTY;

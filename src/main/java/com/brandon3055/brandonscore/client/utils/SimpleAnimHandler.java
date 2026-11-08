@@ -4,10 +4,10 @@
 //import com.brandon3055.brandonscore.BrandonsCore;
 //import com.google.common.base.Objects;
 //import com.google.common.collect.ImmutableMap;
-//import net.minecraft.resources.ResourceLocation;
-//import net.minecraftforge.client.model.animation.Animation;
-//import net.minecraftforge.common.animation.ITimeValue;
-//import net.minecraftforge.common.model.animation.IAnimationStateMachine;
+//import net.minecraft.resources.Identifier;
+//import net.neoforged.client.model.animation.Animation;
+//import net.neoforged.neoforge.common.animation.ITimeValue;
+//import net.neoforged.neoforge.common.model.animation.IAnimationStateMachine;
 //
 ///**
 // * Created by brandon3055 on 3/11/19.

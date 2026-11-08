@@ -608,7 +608,7 @@ public class GuiToolkit {
 //    public GuiElement<?> createEquipModSlots(GuiElement<?> parent, Player player, boolean jeiExclude, Predicate<ItemStack> showFilter) {
 //        GuiElement<?> fallback = new GuiElement<>();
 //        if (equipmentManager != null) {
-//            LazyOptional<IItemHandlerModifiable> optional = equipmentManager.getInventory(player);
+//            Optional<IItemHandlerModifiable> optional = equipmentManager.getInventory(player);
 //            GuiElement<?> container = GuiTexture.newDynamicTexture(() -> BCGuiSprites.getThemed("bg_dynamic_small"));
 //            container.setXSize(26);
 //            optional.ifPresent(handler -> {

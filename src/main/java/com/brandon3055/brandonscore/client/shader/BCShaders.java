@@ -9,11 +9,11 @@ import com.brandon3055.brandonscore.client.BCClientEventHandler;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import net.covers1624.quack.util.CrashLock;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.client.event.RegisterShadersEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.neoforged.client.event.RegisterShadersEvent;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.javafmlmod.FMLJavaModLoadingContext;
 
 /**
  * Created by brandon3055 on 15/05/2022

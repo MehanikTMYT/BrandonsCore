@@ -17,9 +17,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.Event;
+import net.neoforged.neoforge.common.MinecraftForge;
+import net.neoforged.event.entity.player.PlayerInteractEvent;
+import net.neoforged.bus.api.Event;
 
 public class ServerPacketHandler implements ICustomPacketHandler.IServerPacketHandler {
 
@@ -61,7 +61,7 @@ public class ServerPacketHandler implements ICustomPacketHandler.IServerPacketHa
         if (!BCConfig.clientPermissionVerification) return true;
         BlockHitResult traceResult = new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false);
         PlayerInteractEvent.RightClickBlock event = new PlayerInteractEvent.RightClickBlock(player, InteractionHand.MAIN_HAND, pos, traceResult);
-        MinecraftForge.EVENT_BUS.post(event);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(event);
         return event.getResult() != Event.Result.DENY;
     }
 }

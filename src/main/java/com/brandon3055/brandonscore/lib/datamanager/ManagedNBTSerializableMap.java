@@ -4,7 +4,7 @@ import codechicken.lib.data.MCDataInput;
 import codechicken.lib.data.MCDataOutput;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
-import net.minecraftforge.common.util.INBTSerializable;
+import com.brandon3055.brandonscore.lib.datamanager.BCSerializable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,17 +17,17 @@ import java.util.Map;
 @Deprecated //Avoid if possible
 public class ManagedNBTSerializableMap extends AbstractManagedData {
 
-    private Map<String, INBTSerializable<CompoundTag>> valueMap;
+    private Map<String, BCSerializable<CompoundTag>> valueMap;
     private Map<String, Tag> lastValueMap;
 
-    public ManagedNBTSerializableMap(String name, Map<String, INBTSerializable<CompoundTag>> serializableMap, DataFlags... flags) {
+    public ManagedNBTSerializableMap(String name, Map<String, BCSerializable<CompoundTag>> serializableMap, DataFlags... flags) {
         super(name, flags);
         this.valueMap = serializableMap;
         lastValueMap = new HashMap<>();
         serializableMap.forEach((key, value) -> lastValueMap.put(key, value.serializeNBT()));
     }
 
-    public Map<String, INBTSerializable<CompoundTag>> get() {
+    public Map<String, BCSerializable<CompoundTag>> get() {
         return valueMap;
     }
 

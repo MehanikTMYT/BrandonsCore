@@ -4,10 +4,10 @@
 //import net.minecraft.world.entity.player.Player;
 //import net.minecraft.world.inventory.Slot;
 //import net.minecraft.world.item.ItemStack;
-//import net.minecraftforge.common.util.LazyOptional;
-//import net.minecraftforge.items.CapabilityItemHandler;
-//import net.minecraftforge.items.IItemHandler;
-//import net.minecraftforge.items.IItemHandlerModifiable;
+//import com.brandon3055.brandonscore.lib.Optional;
+//import net.neoforged.neoforge.items.CapabilityItemHandler;
+//import net.neoforged.neoforge.items.IItemHandler;
+//import net.neoforged.neoforge.items.IItemHandlerModifiable;
 //
 //import java.util.ArrayList;
 //import java.util.HashMap;
@@ -39,7 +39,7 @@
 //        if (slotDataMap.keySet().stream().anyMatch(slotType -> !slotType.isPlayer)) {
 //            throw new IllegalStateException("All player slots must be added before tile slots.");
 //        }
-//        LazyOptional<IItemHandler> optionalHandler = player.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, Direction.UP);
+//        Optional<IItemHandler> optionalHandler = player.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, Direction.UP);
 //
 //        optionalHandler.ifPresent(itemHandler -> {
 //            for (int x = 0; x < 9; x++) {
@@ -61,7 +61,7 @@
 //        if (slotDataMap.keySet().stream().anyMatch(slotType -> !slotType.isPlayer)) {
 //            throw new IllegalStateException("All player slots must be added before tile slots.");
 //        }
-//        LazyOptional<IItemHandler> optionalHandler  = player.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, Direction.NORTH);
+//        Optional<IItemHandler> optionalHandler  = player.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, Direction.NORTH);
 //        optionalHandler.ifPresent(itemHandler -> slotMoverList.add(new LayoutSlotData(this, equipmentSlot < 4 ? PLAYER_ARMOR : PLAYER_OFF_HAND, itemHandler, equipmentSlot)));
 //        return this;
 //    }
@@ -78,7 +78,7 @@
 //            throw new IllegalStateException("All player slots must be added before tile slots.");
 //        }
 //        if (equipmentManager != null) {
-//            LazyOptional<IItemHandlerModifiable> optional = equipmentManager.getInventory(player);
+//            Optional<IItemHandlerModifiable> optional = equipmentManager.getInventory(player);
 //            optional.ifPresent(handler -> {
 //                for (int i = 0; i < handler.getSlots(); i++) {
 //                    slotMoverList.add(new LayoutSlotData(this, PLAYER_EQUIPMENT, handler, i));

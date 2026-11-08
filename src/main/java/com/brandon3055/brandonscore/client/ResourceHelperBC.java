@@ -2,7 +2,7 @@ package com.brandon3055.brandonscore.client;
 
 import com.brandon3055.brandonscore.BrandonsCore;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.HashMap;
 import java.util.Locale;

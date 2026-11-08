@@ -35,12 +35,12 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.util.INBTSerializable;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.fml.util.thread.EffectiveSide;
-import net.minecraftforge.items.IItemHandler;
+import net.neoforged.neoforge.common.MinecraftForge;
+import net.neoforged.neoforge.capabilities.Capability;
+import com.brandon3055.brandonscore.lib.datamanager.BCSerializable;
+import com.brandon3055.brandonscore.lib.Optional;
+import net.neoforged.fml.util.thread.EffectiveSide;
+import net.neoforged.neoforge.items.IItemHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NonNls;
@@ -66,8 +66,8 @@ public class TileBCore extends BlockEntity implements IDataManagerProvider, IDat
     protected TileCapabilityManager capManager = new TileCapabilityManager(this);
     protected TileDataManager<TileBCore> dataManager = new TileDataManager<>(this);
     private Map<Integer, BiConsumer<MCDataInput, ServerPlayer>> serverPacketHandlers = new HashMap<>();
-    protected Map<String, INBTSerializable<CompoundTag>> savedItemDataObjects = new HashMap<>();
-    protected Map<String, INBTSerializable<CompoundTag>> savedDataObjects = new HashMap<>();
+    protected Map<String, BCSerializable<CompoundTag>> savedItemDataObjects = new HashMap<>();
+    protected Map<String, BCSerializable<CompoundTag>> savedDataObjects = new HashMap<>();
     private Map<Integer, Consumer<MCDataInput>> clientPacketHandlers = new HashMap<>();
 
     private boolean debugOutputEnabled = false;
@@ -82,7 +82,7 @@ public class TileBCore extends BlockEntity implements IDataManagerProvider, IDat
 
     public TileBCore(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
-        MinecraftForge.EVENT_BUS.post(new TileBCoreInitEvent(this));
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(new TileBCoreInitEvent(this));
     }
 
     //region Data Manager
@@ -113,7 +113,7 @@ public class TileBCore extends BlockEntity implements IDataManagerProvider, IDat
     }
 
     public void detectAndSendChanges(boolean containerListeners) {
-        if (level != null && !level.isClientSide) {
+        if (level != null && !level.isClientSide()) {
             if (containerListeners) {
                 dataManager.detectAndSendChangesToListeners(getAccessingPlayers());
                 capManager.detectAndSendChangesToListeners(getAccessingPlayers());
@@ -377,17 +377,17 @@ public class TileBCore extends BlockEntity implements IDataManagerProvider, IDat
     }
 
     /**
-     * Allows you to add raw INBTSerializable data objects too be saved and loaded directly from the tile's NBT.
+     * Allows you to add raw BCSerializable data objects too be saved and loaded directly from the tile's NBT.
      * This saves and loads the data server side. Its also sent in the default chunk sync packet.
      *
      * @param tagName    the name to use when saving this object to the tile's NBT
      * @param dataObject the serializable data object.
      */
-    public void setSavedDataObject(String tagName, INBTSerializable<CompoundTag> dataObject) {
+    public void setSavedDataObject(String tagName, BCSerializable<CompoundTag> dataObject) {
         this.savedDataObjects.put(tagName, dataObject);
     }
 
-    public void setItemSavedDataObject(String tagName, INBTSerializable<CompoundTag> dataObject) {
+    public void setItemSavedDataObject(String tagName, BCSerializable<CompoundTag> dataObject) {
         this.savedItemDataObjects.put(tagName, dataObject);
     }
 
@@ -395,8 +395,8 @@ public class TileBCore extends BlockEntity implements IDataManagerProvider, IDat
 
     @Nonnull
     @Override
-    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, @Nullable Direction side) {
-        LazyOptional<T> ret = capManager.getCapability(capability, side);
+    public <T> Optional<T> getCapability(@Nonnull Capability<T> capability, @Nullable Direction side) {
+        Optional<T> ret = capManager.getCapability(capability, side);
         return ret.isPresent() ? ret : super.getCapability(capability, side);
     }
 

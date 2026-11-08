@@ -1,12 +1,12 @@
 package com.brandon3055.brandonscore.lib;
 
 import com.brandon3055.brandonscore.capability.MultiCapabilityProvider;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.IItemHandlerModifiable;
+import com.brandon3055.brandonscore.lib.Optional;
+import net.neoforged.neoforge.items.IItemHandlerModifiable;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -18,7 +18,7 @@ public interface IEquipmentManager {
 
     void addEquipCaps(ItemStack stack, MultiCapabilityProvider provider);
 
-    LazyOptional<IItemHandlerModifiable> getInventory(LivingEntity entity);
+    Optional<IItemHandlerModifiable> getInventory(LivingEntity entity);
 
     ItemStack findMatchingItem(Item item, LivingEntity entity);
 

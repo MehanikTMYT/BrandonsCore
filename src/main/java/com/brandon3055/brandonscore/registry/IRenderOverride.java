@@ -1,8 +1,8 @@
 //package com.brandon3055.brandonscore.registry;
 //
 //import codechicken.lib.render.item.IItemRenderer;
-//import net.minecraftforge.fml.relauncher.Side;
-//import net.minecraftforge.fml.relauncher.SideOnly;
+//import net.neoforged.fml.relauncher.Side;
+//import net.neoforged.fml.relauncher.SideOnly;
 //
 ///**
 // * Created  by brandon3055 on 21/3/2016.

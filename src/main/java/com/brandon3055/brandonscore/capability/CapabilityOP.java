@@ -2,12 +2,12 @@ package com.brandon3055.brandonscore.capability;
 
 import com.brandon3055.brandonscore.api.power.IOPStorage;
 import net.covers1624.quack.util.CrashLock;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.CapabilityManager;
-import net.minecraftforge.common.capabilities.CapabilityToken;
-import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.neoforged.neoforge.capabilities.Capability;
+import net.neoforged.neoforge.capabilities.CapabilityManager;
+import net.neoforged.neoforge.capabilities.CapabilityToken;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.javafmlmod.FMLJavaModLoadingContext;
 
 /**
  * Created by brandon3055 on 14/8/19.

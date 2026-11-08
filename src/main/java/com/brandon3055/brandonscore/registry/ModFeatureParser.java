@@ -11,14 +11,14 @@
 //import net.minecraft.item.BlockItem;
 //import net.minecraft.item.ItemStack;
 //import net.minecraft.tileentity.TileEntity;
-//import net.minecraftforge.client.model.ModelLoader;
-//import net.minecraftforge.common.config.Configuration;
-//import net.minecraftforge.common.config.Property;
-//import net.minecraftforge.fml.common.discovery.ASMDataTable;
-//import net.minecraftforge.fml.common.registry.ForgeRegistries;
-//import net.minecraftforge.fml.common.registry.GameRegistry;
-//import net.minecraftforge.fml.relauncher.Side;
-//import net.minecraftforge.fml.relauncher.SideOnly;
+//import net.neoforged.client.model.ModelLoader;
+//import net.neoforged.neoforge.common.config.Configuration;
+//import net.neoforged.neoforge.common.config.Property;
+//import net.neoforged.fml.common.discovery.ASMDataTable;
+//import net.neoforged.fml.common.registry.ForgeRegistries;
+//import net.neoforged.fml.common.registry.GameRegistry;
+//import net.neoforged.fml.relauncher.Side;
+//import net.neoforged.fml.relauncher.SideOnly;
 //
 //import java.lang.reflect.Constructor;
 //import java.lang.reflect.Field;

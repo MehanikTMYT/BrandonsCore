@@ -2,7 +2,7 @@ package com.brandon3055.brandonscore.worldentity;
 
 import com.brandon3055.brandonscore.utils.LogHelperBC;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;

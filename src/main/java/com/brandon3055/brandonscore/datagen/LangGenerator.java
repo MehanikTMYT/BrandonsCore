@@ -3,7 +3,7 @@ package com.brandon3055.brandonscore.datagen;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
-import net.minecraftforge.common.data.LanguageProvider;
+import net.neoforged.neoforge.common.data.LanguageProvider;
 
 import static com.brandon3055.brandonscore.BrandonsCore.MODID;
 

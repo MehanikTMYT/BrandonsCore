@@ -13,10 +13,10 @@
 //import net.minecraft.world.item.ItemStack;
 //import net.minecraft.world.item.TooltipFlag;
 //import net.minecraft.world.level.Level;
-//import net.minecraftforge.api.distmarker.Dist;
-//import net.minecraftforge.api.distmarker.OnlyIn;
-//import net.minecraftforge.common.capabilities.ICapabilityProvider;
-//import net.minecraftforge.common.util.LazyOptional;
+//import net.neoforged.api.distmarker.Dist;
+//import net.neoforged.api.distmarker.OnlyIn;
+//import net.neoforged.neoforge.capabilities.ICapabilityProvider;
+//import com.brandon3055.brandonscore.lib.Optional;
 //
 //import javax.annotation.Nullable;
 //import java.util.List;
@@ -167,7 +167,7 @@
 //    @Override
 //    public ICapabilityProvider initCapabilities(final ItemStack stack, CompoundTag nbt) {
 //        //TODO Check this out
-//        return new OPMultiProvider(LazyOptional.of(() -> new OPStorageItem(stack)), null);
+//        return new OPMultiProvider(Optional.of(() -> new OPStorageItem(stack)), null);
 //    }
 //
 //    private class OPStorageItem implements IOPStorage {

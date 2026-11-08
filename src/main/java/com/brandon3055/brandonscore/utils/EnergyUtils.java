@@ -11,12 +11,12 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.energy.IEnergyStorage;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.capabilities.ForgeCapabilities;
+import net.neoforged.neoforge.capabilities.ICapabilityProvider;
+import com.brandon3055.brandonscore.lib.Optional;
+import net.neoforged.neoforge.energy.IEnergyStorage;
 
 import java.util.List;
 
@@ -28,7 +28,7 @@ public class EnergyUtils {
     // ================= Get Storage =================
 
     public static IOPStorage getStorage(BlockEntity tile, Direction side) {
-        if (tile.getLevel().isClientSide) {
+        if (tile.getLevel().isClientSide()) {
             LogHelperBC.bigDev("Attempt to do energy operation client side!");
             return null;
         }
@@ -49,11 +49,11 @@ public class EnergyUtils {
      * This is only public to allow for other ICapabilityProvider's
      */
     public static IOPStorage getStorageFromProvider(ICapabilityProvider provider, Direction side) {
-        LazyOptional<IOPStorage> op = provider.getCapability(CapabilityOP.OP, side);
+        Optional<IOPStorage> op = provider.getCapability(CapabilityOP.OP, side);
         if (op.isPresent()) {
             return op.orElseThrow(ImpossibleException::new);
         }
-        LazyOptional<IEnergyStorage> fe = provider.getCapability(ForgeCapabilities.ENERGY, side);
+        Optional<IEnergyStorage> fe = provider.getCapability(ForgeCapabilities.ENERGY, side);
         if (fe.isPresent()) {
             return new OPWrappers.FE(fe.orElseThrow(ImpossibleException::new));
         }

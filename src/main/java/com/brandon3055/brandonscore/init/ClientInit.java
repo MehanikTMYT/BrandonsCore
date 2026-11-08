@@ -12,12 +12,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
-import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
-import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.neoforged.client.event.ClientPlayerNetworkEvent;
+import net.neoforged.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.common.MinecraftForge;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.fml.javafmlmod.FMLJavaModLoadingContext;
 
 /**
  * Created by brandon3055 on 15/11/2022
@@ -33,7 +33,7 @@ public class ClientInit {
         modBus.addListener(ClientInit::clientSetupEvent);
         modBus.addListener(ClientInit::onAddRenderLayers);
 
-        MinecraftForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingIn event) -> ContributorHandler.onClientLogin(event.getPlayer()));
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingIn event) -> ContributorHandler.onClientLogin(event.getPlayer()));
         ProcessHandlerClient.init();
         HudManager.init();
         BCShaders.init();

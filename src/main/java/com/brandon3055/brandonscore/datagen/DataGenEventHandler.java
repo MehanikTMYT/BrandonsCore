@@ -1,9 +1,9 @@
 package com.brandon3055.brandonscore.datagen;
 
 import net.minecraft.data.DataGenerator;
-import net.minecraftforge.data.event.GatherDataEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.data.event.GatherDataEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 
 /**
  * Created by brandon3055 on 26/2/20.

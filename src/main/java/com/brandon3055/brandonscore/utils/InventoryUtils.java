@@ -9,8 +9,8 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.IItemHandlerModifiable;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.IItemHandlerModifiable;
 
 /**
  * Created by brandon3055 on 31/05/2016.
@@ -67,7 +67,7 @@ public class InventoryUtils {
      * Will not transfer partial stacks.
      */
     public static void handleHeldStackTransfer(int slot, Container inventory, Player player) {
-        if (player.level().isClientSide) {
+        if (player.level().isClientSide()) {
             return;
         }
 
@@ -90,7 +90,7 @@ public class InventoryUtils {
     }
 
     public static void handleHeldStackTransfer(int slot, IItemHandlerModifiable inventory, Player player) {
-        if (player.level().isClientSide) {
+        if (player.level().isClientSide()) {
             return;
         }
 
@@ -124,7 +124,7 @@ public class InventoryUtils {
      * Will prioritize putting it in their hand if their hand is empty.
      * */
     public static void givePlayerStack(Player player, ItemStack stack) {
-        if (player.level().isClientSide) {
+        if (player.level().isClientSide()) {
             return;
         }
 

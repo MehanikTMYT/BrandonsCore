@@ -34,23 +34,23 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
-import net.minecraftforge.client.event.ComputeFovModifierEvent;
-import net.minecraftforge.client.event.RenderHighlightEvent;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.client.event.ClientPlayerNetworkEvent;
+import net.neoforged.client.event.ComputeFovModifierEvent;
+import net.neoforged.client.event.RenderHighlightEvent;
+import net.neoforged.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.common.MinecraftForge;
+import net.neoforged.event.TickEvent;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 
 import java.util.*;
 
 import static net.minecraft.client.renderer.RenderStateShard.*;
-import static net.minecraftforge.client.event.RenderLevelStageEvent.Stage.AFTER_PARTICLES;
-import static net.minecraftforge.client.event.RenderLevelStageEvent.Stage.AFTER_SOLID_BLOCKS;
+import static net.neoforged.client.event.RenderLevelStageEvent.Stage.AFTER_PARTICLES;
+import static net.neoforged.client.event.RenderLevelStageEvent.Stage.AFTER_SOLID_BLOCKS;
 
 /**
  * Created by brandon3055 on 17/07/2016.
@@ -86,7 +86,7 @@ public class BCClientEventHandler {
     public static void init() {
         LOCK.lock();
 
-        MinecraftForge.EVENT_BUS.register(new BCClientEventHandler());
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.register(new BCClientEventHandler());
     }
 
     @SubscribeEvent

@@ -2,10 +2,10 @@ package com.brandon3055.brandonscore.handlers;
 
 import net.covers1624.quack.util.CrashLock;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.living.LivingEvent;
-import net.minecraftforge.event.entity.living.LivingEvent.LivingTickEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.common.MinecraftForge;
+import net.neoforged.event.entity.living.LivingEvent;
+import net.neoforged.event.entity.living.LivingEvent.LivingTickEvent;
+import net.neoforged.event.entity.player.PlayerEvent;
 
 import java.util.*;
 
@@ -20,8 +20,8 @@ public class BCEventHandler {
     public static void init() {
         LOCK.lock();
 
-        MinecraftForge.EVENT_BUS.addListener(BCEventHandler::playerLoggedOut);
-        MinecraftForge.EVENT_BUS.addListener(BCEventHandler::livingUpdate);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(BCEventHandler::playerLoggedOut);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(BCEventHandler::livingUpdate);
     }
 
     public static void playerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {

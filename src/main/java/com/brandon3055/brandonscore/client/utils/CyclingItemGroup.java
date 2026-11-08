@@ -3,12 +3,12 @@
 //import com.brandon3055.brandonscore.api.TimeKeeper;
 //import net.minecraft.core.NonNullList;
 //import net.minecraft.core.Registry;
-//import net.minecraft.resources.ResourceLocation;
+//import net.minecraft.resources.Identifier;
 //import net.minecraft.world.item.CreativeModeTab;
 //import net.minecraft.world.item.Item;
 //import net.minecraft.world.item.ItemStack;
 //import net.minecraft.world.level.block.Block;
-//import net.minecraftforge.registries.ForgeRegistries;
+//import net.neoforged.neoforge.registries.ForgeRegistries;
 //
 //import javax.annotation.Nonnull;
 //import java.util.Comparator;

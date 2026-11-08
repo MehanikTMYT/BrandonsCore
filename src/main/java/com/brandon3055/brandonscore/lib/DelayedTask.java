@@ -4,8 +4,7 @@ import com.brandon3055.brandonscore.BrandonsCore;
 import com.brandon3055.brandonscore.client.ProcessHandlerClient;
 import com.brandon3055.brandonscore.handlers.IProcess;
 import com.brandon3055.brandonscore.handlers.ProcessHandler;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
+import net.neoforged.api.distmarker.Dist;
 
 /**
  * Created by brandon3055 on 4/01/2018.
@@ -18,8 +17,8 @@ public class DelayedTask {
     }
 
     public static void sided(int delay, Runnable task) {
-        DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> () -> ProcessHandlerClient.addProcess(new Task(delay, task)));
-        DistExecutor.safeRunWhenOn(Dist.DEDICATED_SERVER, () -> () -> ProcessHandler.addProcess(new Task(delay, task)));
+         // STUB(port-26.1.2): DistExecutor.safeRunWhenOn  ProcessHandlerClient.addProcess(new Task(delay, task)));
+         // STUB(port-26.1.2): DistExecutor.safeRunWhenOn  ProcessHandler.addProcess(new Task(delay, task)));
     }
 
     public static void server(int delay, Runnable task) {

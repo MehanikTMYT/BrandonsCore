@@ -10,7 +10,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.ForgeHooks;
+import net.neoforged.neoforge.common.ForgeHooks;
 
 import java.util.LinkedList;
 
@@ -37,7 +37,7 @@ public class TeleportUtils {
      * @return the entity. This may be a new instance so be sure to keep that in mind.
      */
     public static Entity teleportEntity(Entity entity, ResourceKey<Level> dimension, double xCoord, double yCoord, double zCoord, float yaw, float pitch) {
-        if (entity == null || entity.level().isClientSide) {
+        if (entity == null || entity.level().isClientSide()) {
             return entity;
         }
 
@@ -81,7 +81,7 @@ public class TeleportUtils {
      * This is the base teleport method that figures out how to handle the teleport and makes it happen!
      */
     private static Entity handleEntityTeleport(Entity entity, MinecraftServer server, ResourceKey<Level> sourceDim, ResourceKey<Level> targetDim, double xCoord, double yCoord, double zCoord, float yaw, float pitch) {
-        if (entity == null || entity.level().isClientSide || targetDim == null) {
+        if (entity == null || entity.level().isClientSide() || targetDim == null) {
             return entity;
         }
 

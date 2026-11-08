@@ -12,19 +12,18 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.AddReloadListenerEvent;
-import net.minecraftforge.event.OnDatapackSyncEvent;
-import net.minecraftforge.fml.DistExecutor;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.client.event.ClientPlayerNetworkEvent;
+import net.neoforged.neoforge.common.MinecraftForge;
+import net.neoforged.event.AddReloadListenerEvent;
+import net.neoforged.event.OnDatapackSyncEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
@@ -58,9 +57,9 @@ public class MultiBlockManager extends SimpleJsonResourceReloadListener {
     }
 
     public static void init() {
-        MinecraftForge.EVENT_BUS.addListener(MultiBlockManager::addReloadListeners);
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> MinecraftForge.EVENT_BUS.addListener(MultiBlockManager::onDisconnectFromServer));
-        DistExecutor.unsafeRunWhenOn(Dist.DEDICATED_SERVER, () -> () -> MinecraftForge.EVENT_BUS.addListener(MultiBlockManager::onSendDataToClient));
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(MultiBlockManager::addReloadListeners);
+         // STUB(port-26.1.2): DistExecutor  net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(MultiBlockManager::onDisconnectFromServer));
+        DistExecutor.unsafeRunWhenOn(Dist.DEDICATED_SERVER, () -> () -> net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(MultiBlockManager::onSendDataToClient));
     }
 
     public static void addReloadListeners(AddReloadListenerEvent event) {

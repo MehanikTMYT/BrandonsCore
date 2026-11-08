@@ -18,10 +18,9 @@ import net.minecraft.Util;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.fml.DistExecutor;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.common.MinecraftForge;
+import net.neoforged.event.TickEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
@@ -77,8 +76,8 @@ public class ContributorFetcher {
 
     public void init() {
         LOCK.lock();                                              //I can do this because ClientTickEvent is server safe.
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> MinecraftForge.EVENT_BUS.addListener((TickEvent.ClientTickEvent event) -> onTick(event)));
-        DistExecutor.unsafeRunWhenOn(Dist.DEDICATED_SERVER, () -> () -> MinecraftForge.EVENT_BUS.addListener((TickEvent.ServerTickEvent event) -> onTick(event)));
+         // STUB(port-26.1.2): DistExecutor  net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((TickEvent.ClientTickEvent event) -> onTick(event)));
+        DistExecutor.unsafeRunWhenOn(Dist.DEDICATED_SERVER, () -> () -> net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((TickEvent.ServerTickEvent event) -> onTick(event)));
         downloadHashes();
     }
 

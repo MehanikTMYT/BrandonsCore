@@ -1,7 +1,7 @@
 //package com.brandon3055.brandonscore.registry;
 //
-//import net.minecraftforge.common.config.Configuration;
-//import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+//import net.neoforged.neoforge.common.config.Configuration;
+//import net.neoforged.fml.common.event.FMLPreInitializationEvent;
 //
 ///**
 // * Created by brandon3055 on 14/06/2017.<br><br>

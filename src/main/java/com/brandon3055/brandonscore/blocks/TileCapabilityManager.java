@@ -10,12 +10,12 @@ import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
-import net.minecraftforge.common.util.INBTSerializable;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.energy.EnergyStorage;
+import net.neoforged.neoforge.capabilities.Capability;
+import net.neoforged.neoforge.capabilities.ForgeCapabilities;
+import net.neoforged.neoforge.capabilities.ICapabilityProvider;
+import com.brandon3055.brandonscore.lib.datamanager.BCSerializable;
+import com.brandon3055.brandonscore.lib.Optional;
+import net.neoforged.neoforge.energy.EnergyStorage;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -27,10 +27,10 @@ import java.util.function.Predicate;
  */
 public class TileCapabilityManager implements ICapabilityProvider {
 
-    private Map<Capability<?>, Map<Direction, LazyOptional<?>>> capabilityMap = new HashMap<>();
+    private Map<Capability<?>, Map<Direction, Optional<?>>> capabilityMap = new HashMap<>();
     private Map<Object, Predicate<Direction>> capSideValidator = new HashMap<>();
 
-    private Map<INBTSerializable<CompoundTag>, SerializationFlags<?>> serializableMap = new HashMap<>();
+    private Map<BCSerializable<CompoundTag>, SerializationFlags<?>> serializableMap = new HashMap<>();
     private List<SerializationFlags<?>> indexedDataList = new ArrayList<>();
     private TileBCore tile;
 
@@ -72,7 +72,7 @@ public class TileCapabilityManager implements ICapabilityProvider {
      * @return The modifiable serialization flags. By default set to 'save to tile' and 'save to item'
      * @see #set(Capability, Object, Direction...)
      */
-    public <T extends INBTSerializable<CompoundTag>> SerializationFlags<T> setManaged(String tagName, @Nonnull Capability<?> cap, @Nonnull T capInstance, Direction... sides) {
+    public <T extends BCSerializable<CompoundTag>> SerializationFlags<T> setManaged(String tagName, @Nonnull Capability<?> cap, @Nonnull T capInstance, Direction... sides) {
         set(cap, capInstance, sides);
         SerializationFlags<T> flags = new SerializationFlags<>(tagName, capInstance);
         serializableMap.put(capInstance, flags);
@@ -82,9 +82,9 @@ public class TileCapabilityManager implements ICapabilityProvider {
 
     /**
      * The same as setManaged except the capability will not be exposes at all via getCapability. Used in cases where you need a "private" internal capability
-     * @see #setManaged(String, Capability, INBTSerializable, Direction...)
+     * @see #setManaged(String, Capability, BCSerializable, Direction...)
      */
-    public <T extends INBTSerializable<CompoundTag>> SerializationFlags<T> setInternalManaged(String tagName, @Nonnull Capability<?> cap, @Nonnull T capInstance) {
+    public <T extends BCSerializable<CompoundTag>> SerializationFlags<T> setInternalManaged(String tagName, @Nonnull Capability<?> cap, @Nonnull T capInstance) {
         SerializationFlags<T> flags = new SerializationFlags<>(tagName, capInstance);
         serializableMap.put(capInstance, flags);
         indexedDataList.add(flags);
@@ -117,9 +117,9 @@ public class TileCapabilityManager implements ICapabilityProvider {
      * @param side        The side to bind to. (can be null)
      */
     public <T> void setSide(@Nonnull Capability<?> cap, @Nonnull T capInstance, @Nullable Direction side) {
-        Map<Direction, LazyOptional<?>> map = capabilityMap.computeIfAbsent(cap, c -> new HashMap<>());
-        LazyOptional<?> previous = map.get(side);
-        map.put(side, LazyOptional.of(() -> capInstance));
+        Map<Direction, Optional<?>> map = capabilityMap.computeIfAbsent(cap, c -> new HashMap<>());
+        Optional<?> previous = map.get(side);
+        map.put(side, Optional.of(() -> capInstance));
 
         if (previous != null) {
             previous.invalidate();
@@ -133,9 +133,9 @@ public class TileCapabilityManager implements ICapabilityProvider {
      * @param side The side to remove from. (can be null)
      */
     public <T> void clearSide(@Nonnull Capability<?> cap, @Nullable Direction side) {
-        Map<Direction, LazyOptional<?>> map = capabilityMap.get(cap);
+        Map<Direction, Optional<?>> map = capabilityMap.get(cap);
         if (map != null) {
-            LazyOptional<?> previous = map.get(side);
+            Optional<?> previous = map.get(side);
             map.remove(side);
 
             if (previous != null) {
@@ -147,25 +147,25 @@ public class TileCapabilityManager implements ICapabilityProvider {
     @Nonnull
     @Override
     @SuppressWarnings("unchecked")
-    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
-        Map<Direction, LazyOptional<?>> map = capabilityMap.get(cap);
+    public <T> Optional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
+        Map<Direction, Optional<?>> map = capabilityMap.get(cap);
         if (map == null && cap == ForgeCapabilities.ENERGY) {
             map = capabilityMap.get(CapabilityOP.OP);
         }
 
         if (map != null && map.containsKey(side)) {
-            LazyOptional<T> optional = (LazyOptional<T>) map.get(side);
+            Optional<T> optional = (Optional<T>) map.get(side);
             if (optional.filter(o -> capSideValidator.getOrDefault(o, d -> true).test(side)).isPresent()) {
                 return optional;
             }
         }
 
-        return LazyOptional.empty();
+        return Optional.empty();
     }
 
     //Should be called by the tile's remove method to invalidate capabilities when the tile is removed.
     public void invalidate() {
-        capabilityMap.values().forEach(map -> map.values().forEach(LazyOptional::invalidate));
+        capabilityMap.values().forEach(map -> map.values().forEach(Optional::invalidate));
     }
 
     /**

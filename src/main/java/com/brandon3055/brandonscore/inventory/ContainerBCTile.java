@@ -14,9 +14,9 @@ import net.minecraft.world.inventory.ContainerListener;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.IItemHandler;
+import net.neoforged.neoforge.capabilities.ForgeCapabilities;
+import com.brandon3055.brandonscore.lib.Optional;
+import net.neoforged.neoforge.items.IItemHandler;
 
 import javax.annotation.Nullable;
 
@@ -80,7 +80,7 @@ public abstract class ContainerBCTile<T extends TileBCore> extends ModularGuiCon
 ////        if (slotLayout != null) {
 ////            playerSlots = slotLayout.getPlayerSlotCount();
 ////        }
-//        LazyOptional<IItemHandler> optional = getItemHandler();
+//        Optional<IItemHandler> optional = getItemHandler();
 //        if (optional.isPresent()) {
 //            IItemHandler handler = optional.orElse(EmptyHandler.INSTANCE);
 //            Slot slot = getSlot(i);
@@ -129,7 +129,7 @@ public abstract class ContainerBCTile<T extends TileBCore> extends ModularGuiCon
      * @return the item handler for the tile entity.
      */
     @Deprecated
-    public LazyOptional<IItemHandler> getItemHandler() {
+    public Optional<IItemHandler> getItemHandler() {
         return tile.getCapability(ForgeCapabilities.ITEM_HANDLER, null);
     }
 

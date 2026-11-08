@@ -5,14 +5,14 @@ import codechicken.lib.data.MCDataOutput;
 import com.brandon3055.brandonscore.lib.IMCDataSerializable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
-import net.minecraftforge.common.util.INBTSerializable;
+import com.brandon3055.brandonscore.lib.datamanager.BCSerializable;
 
 import java.util.Locale;
 
 /**
  * Created by brandon3055 on 7/11/19.
  */
-public abstract class FilterBase implements INBTSerializable<CompoundTag>, IMCDataSerializable {
+public abstract class FilterBase implements BCSerializable<CompoundTag>, IMCDataSerializable {
     private final EntityFilter filter;
     protected int nodeID = -1;
     private FilterGroup parent;

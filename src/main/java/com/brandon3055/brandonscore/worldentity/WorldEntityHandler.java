@@ -5,18 +5,18 @@ import com.google.common.collect.ImmutableList;
 import net.covers1624.quack.util.CrashLock;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.level.LevelEvent;
-import net.minecraftforge.event.server.ServerStoppedEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.IForgeRegistry;
-import net.minecraftforge.registries.NewRegistryEvent;
-import net.minecraftforge.registries.RegistryBuilder;
+import net.neoforged.neoforge.common.MinecraftForge;
+import net.neoforged.event.TickEvent;
+import net.neoforged.event.level.LevelEvent;
+import net.neoforged.event.server.ServerStoppedEvent;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.neoforged.neoforge.registries.IForgeRegistry;
+import net.neoforged.neoforge.registries.NewRegistryEvent;
+import net.neoforged.neoforge.registries.RegistryBuilder;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -50,10 +50,10 @@ public class WorldEntityHandler {
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
         modBus.addListener(WorldEntityHandler::createRegistry);
 
-        MinecraftForge.EVENT_BUS.addListener(WorldEntityHandler::worldLoad);
-        MinecraftForge.EVENT_BUS.addListener(WorldEntityHandler::worldUnload);
-        MinecraftForge.EVENT_BUS.addListener(WorldEntityHandler::onServerStop);
-        MinecraftForge.EVENT_BUS.addListener(WorldEntityHandler::worldTick);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(WorldEntityHandler::worldLoad);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(WorldEntityHandler::worldUnload);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(WorldEntityHandler::onServerStop);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(WorldEntityHandler::worldTick);
     }
 
     public static void worldLoad(LevelEvent.Load event) {
