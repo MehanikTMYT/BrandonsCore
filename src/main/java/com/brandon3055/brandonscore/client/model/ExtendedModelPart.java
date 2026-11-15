@@ -24,8 +24,10 @@ public class ExtendedModelPart extends ModelPart {
         return this;
     }
 
-    @Override
-    public final void render(PoseStack poseStack, VertexConsumer consumer, int packedLight, int packedOverlay, float r, float g, float b, float a) {}
+    // This tree carries custom MultiBufferSource-rendered parts, not baked cubes.
+    public final void render(PoseStack poseStack, VertexConsumer consumer, int packedLight, int packedOverlay, float r, float g, float b, float a) {
+        render(poseStack, (MultiBufferSource) type -> consumer, packedLight, packedOverlay, r, g, b, a);
+    }
 
     public final void render(PoseStack poseStack, MultiBufferSource getter, int packedLight, int packedOverlay) {
         render(poseStack, getter, packedLight, packedOverlay, 1F, 1F, 1F, 1F);

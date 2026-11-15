@@ -132,7 +132,7 @@ public class ContributorProperties {
             badges.clear();
         }
 
-        Player client = DistExecutor.unsafeCallWhenOn(Dist.CLIENT, () -> ClientOnly::getClientPlayer);
+        Player client = net.neoforged.fml.loading.FMLEnvironment.getDist() == Dist.CLIENT ? ClientOnly.getClientPlayer() : null;
         if (client != null && client.getUUID().equals(userID)) {
             config = ContributorConfig.load();
             config.props = this;

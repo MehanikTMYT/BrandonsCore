@@ -90,7 +90,7 @@ public class ManagedLong extends AbstractManagedData<Long> {
 
     @Override
     public void fromNBT(CompoundTag compound) {
-        value = compound.getLong(name);
+        value = compound.getLongOr(name, 0L);
         notifyListeners(value);
     }
 

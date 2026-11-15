@@ -20,10 +20,10 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.client.event.ClientPlayerNetworkEvent;
-import net.neoforged.neoforge.common.MinecraftForge;
-import net.neoforged.event.AddReloadListenerEvent;
-import net.neoforged.event.OnDatapackSyncEvent;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
+import net.neoforged.neoforge.event.OnDatapackSyncEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
@@ -38,32 +38,35 @@ import static codechicken.lib.math.MathHelper.torad;
 /**
  * Created by brandon3055 on 26/06/2022
  */
-public class MultiBlockManager extends SimpleJsonResourceReloadListener {
+public class MultiBlockManager extends SimpleJsonResourceReloadListener<JsonElement> {
     private static final Logger LOGGER = LogManager.getLogger(MultiBlockManager.class);
     public static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().disableHtmlEscaping().create();
     /**
      * These are the definitions loaded from disk locally, So local in this case could mean the local client or the dedicated server.
      */
-    private static final Map<ResourceLocation, MultiBlockDefinition> LOCAL_DEFINITIONS = new HashMap<>();
+    private static final Map<Identifier, MultiBlockDefinition> LOCAL_DEFINITIONS = new HashMap<>();
     /**
      * These are definitions that have been sent from the server to the client. These override the clients local definitions.
      * So these will only ever be populated client side when the client is connected to a server.
      * This map will be cleared when the client disconnects.
      */
-    private static final Map<ResourceLocation, MultiBlockDefinition> SERVER_DEFINITIONS = new HashMap<>();
+    private static final Map<Identifier, MultiBlockDefinition> SERVER_DEFINITIONS = new HashMap<>();
 
     public MultiBlockManager() {
-        super(GSON, "multiblocks");
+        super(com.mojang.serialization.Codec.PASSTHROUGH.xmap(
+                dynamic -> dynamic.convert(com.mojang.serialization.JsonOps.INSTANCE).getValue(),
+                json -> new com.mojang.serialization.Dynamic<>(com.mojang.serialization.JsonOps.INSTANCE, json)),
+                new net.minecraft.resources.FileToIdConverter("multiblocks", ".json"));
     }
 
     public static void init() {
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(MultiBlockManager::addReloadListeners);
          // STUB(port-26.1.2): DistExecutor  net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(MultiBlockManager::onDisconnectFromServer));
-        DistExecutor.unsafeRunWhenOn(Dist.DEDICATED_SERVER, () -> () -> net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(MultiBlockManager::onSendDataToClient));
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(MultiBlockManager::onSendDataToClient);
     }
 
-    public static void addReloadListeners(AddReloadListenerEvent event) {
-        event.addListener(new MultiBlockManager());
+    public static void addReloadListeners(AddServerReloadListenersEvent event) {
+        event.addListener(Identifier.fromNamespaceAndPath("brandonscore", "multiblocks"), new MultiBlockManager());
     }
 
     private static void onSendDataToClient(OnDatapackSyncEvent event) {
@@ -77,21 +80,21 @@ public class MultiBlockManager extends SimpleJsonResourceReloadListener {
     public static void receiveDefinitionsFromServer(PacketCustom packet) {
         int count = packet.readVarInt();
         for (int i = 0; i < count; i++) {
-            ResourceLocation id = packet.readResourceLocation();
+            Identifier id = packet.readResourceLocation();
             String jsonString = packet.readString();
             SERVER_DEFINITIONS.put(id, new MultiBlockDefinition(id, JsonParser.parseString(jsonString)));
         }
     }
 
-    private static void onDisconnectFromServer(ClientPlayerNetworkEvent.LoggingOut event) {
+    public static void onDisconnectFromServer(ClientPlayerNetworkEvent.LoggingOut event) {
         SERVER_DEFINITIONS.clear();
     }
 
     @Override
-    protected void apply(Map<ResourceLocation, JsonElement> map, ResourceManager manager, ProfilerFiller filter) {
+    protected void apply(Map<Identifier, JsonElement> map, ResourceManager manager, ProfilerFiller filter) {
         LOCAL_DEFINITIONS.clear();
-        for (Map.Entry<ResourceLocation, JsonElement> entry : map.entrySet()) {
-            ResourceLocation id = entry.getKey();
+        for (Map.Entry<Identifier, JsonElement> entry : map.entrySet()) {
+            Identifier id = entry.getKey();
             JsonElement json = entry.getValue();
             try {
                 LOCAL_DEFINITIONS.put(id, new MultiBlockDefinition(id, json));
@@ -102,23 +105,23 @@ public class MultiBlockManager extends SimpleJsonResourceReloadListener {
         }
     }
 
-    public static Map<ResourceLocation, MultiBlockDefinition> getDefinitions() {
+    public static Map<Identifier, MultiBlockDefinition> getDefinitions() {
         if (SERVER_DEFINITIONS.isEmpty()) {
             return ImmutableMap.copyOf(LOCAL_DEFINITIONS);
         }
         return ImmutableMap.copyOf(SERVER_DEFINITIONS);
     }
 
-    public static ImmutableList<ResourceLocation> getRegisteredIds() {
+    public static ImmutableList<Identifier> getRegisteredIds() {
         return ImmutableList.copyOf(getDefinitions().keySet());
     }
 
     @Nullable
-    public static MultiBlockDefinition getDefinition(ResourceLocation id) {
+    public static MultiBlockDefinition getDefinition(Identifier id) {
         return getDefinitions().getOrDefault(id, null);
     }
 
-    public static int placeCommand(ServerLevel level, BlockPos placePos, ResourceLocation id, Vec3 rotation) {
+    public static int placeCommand(ServerLevel level, BlockPos placePos, Identifier id, Vec3 rotation) {
         MultiBlockDefinition definition = getDefinition(id);
 
         if (definition != null) {

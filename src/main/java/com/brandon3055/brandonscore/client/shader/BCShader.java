@@ -1,80 +1,65 @@
 package com.brandon3055.brandonscore.client.shader;
 
-import codechicken.lib.render.shader.CCShaderInstance;
-import codechicken.lib.render.shader.CCUniform;
+import com.mojang.blaze3d.pipeline.*;
+import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.rendertype.*;
 import net.minecraft.resources.Identifier;
-import net.neoforged.client.event.RegisterShadersEvent;
-import net.neoforged.bus.api.IEventBus;
-
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
+import java.nio.*;
+import java.util.*;
 import java.util.function.Consumer;
 
-/**
- * Created by covers1624 on 1/10/22.
- */
+/** MC26 pipeline and extraction-time parameters, with no GL state or shader-instance globals. */
 public class BCShader<T extends BCShader<T>> {
-
-    private final ResourceLocation location;
-    private final VertexFormat format;
-    private final List<Consumer<T>> applyCallbacks = new LinkedList<>();
-
-    protected CCShaderInstance shaderInstance;
-
-    protected CCUniform modelMatUniform;
-    protected CCUniform timeUniform;
-    private CCUniform decayUniform;
-
-    public BCShader(ResourceLocation location, VertexFormat format) {
-        this.location = location;
-        this.format = format;
+    static final int BLOCK_SIZE = 176;
+    final ByteBuffer parameters = ByteBuffer.allocate(BLOCK_SIZE).order(ByteOrder.nativeOrder());
+    final Identifier location;
+    final VertexFormat format;
+    private final Map<VertexFormat.Mode, RenderPipeline> pipelines = new EnumMap<>(VertexFormat.Mode.class);
+    private final List<Consumer<T>> callbacks = new ArrayList<>();
+    public BCShader(Identifier location, VertexFormat format) {
+        this.location = location; this.format = format;
+        uniform(0).glUniformMatrix4f(new org.joml.Matrix4f());
+        uniform(64).glUniform4f(1, 1, 1, 1);
+        uniform(80).glUniform2i(-1, -1); uniform(88).glUniform2i(-1, -1);
+        uniform(120).glUniform1f(1); uniform(128).glUniform1i(1); uniform(132).glUniform1i(1);
     }
-
-    public final void register(IEventBus bus) {
-        bus.addListener(this::onRegisterShaders);
+    public BCUniform uniform(int offset) { return new BCUniform(this, offset); }
+    @SuppressWarnings("unchecked")
+    public final T onShaderApplied(Consumer<T> callback) { callbacks.add(callback); return (T)this; }
+    @SuppressWarnings("unchecked")
+    byte[] snapshot() {
+        for (var callback : callbacks) callback.accept((T)this);
+        return parameters.array().clone();
     }
-
-    public final T onShaderApplied(Consumer<T> cons) {
-        applyCallbacks.add(cons);
-        //noinspection unchecked
-        return (T) this;
-    }
-
-    // @formatter:off
-    public final boolean isLoaded() { return shaderInstance != null; }
-    public final CCShaderInstance getShaderInstance() { return Objects.requireNonNull(shaderInstance, "Shader not loaded yet."); }
-    public final CCUniform getModelMatUniform() { return Objects.requireNonNull(modelMatUniform, missingUniformMessage("ModelMat"));}
-    public final boolean hasModelMatUniform() { return modelMatUniform != null; }
-    public final CCUniform getTimeUniform() { return Objects.requireNonNull(timeUniform, missingUniformMessage("Time")); }
-    public final boolean hasTimeUniform() { return timeUniform != null; }
-    public final CCUniform getDecayUniform() { return Objects.requireNonNull(decayUniform, missingUniformMessage("Decay")); }
-    public final boolean hasDecayUniform() { return decayUniform != null; }
-    // @formatter:on
-
-    private void onRegisterShaders(RegisterShadersEvent event) {
-        event.registerShader(CCShaderInstance.create(event.getResourceProvider(), location, format), e -> {
-            shaderInstance = (CCShaderInstance) e;
-            onShaderLoaded();
-            shaderInstance.onApply(() -> {
-                for (Consumer<T> applyCallback : applyCallbacks) {
-                    //noinspection unchecked
-                    applyCallback.accept((T) BCShader.this);
-                }
-            });
+    public RenderPipeline pipeline(VertexFormat.Mode mode) {
+        return pipelines.computeIfAbsent(mode, m -> {
+            boolean energy = location.getPath().equals("energy_bar");
+            var builder = RenderPipeline.builder(energy ? RenderPipelines.MATRICES_PROJECTION_SNIPPET : RenderPipelines.MATRICES_FOG_LIGHT_DIR_SNIPPET)
+                .withLocation(location.withSuffix("_" + mode.name().toLowerCase(Locale.ROOT)))
+                .withVertexShader(Identifier.fromNamespaceAndPath(location.getNamespace(), "core/" + (energy || location.getPath().equals("chaos_entity") || location.getPath().equals("position_color_tex_alpha0") ? location.getPath() : "contributor/contrib_base")))
+                .withFragmentShader(Identifier.fromNamespaceAndPath(location.getNamespace(), "core/" + location.getPath()))
+                .withVertexFormat(format, mode).withCull(false)
+                .withUniform("BCParams", UniformType.UNIFORM_BUFFER)
+                .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT));
+            if (!energy) builder.withSampler("Sampler0").withSampler("Sampler1").withSampler("Sampler2").withDepthStencilState(DepthStencilState.DEFAULT);
+            return builder.build();
         });
     }
-
-    protected void onShaderLoaded() {
-        modelMatUniform = shaderInstance.getUniform("ModelMat");
-        timeUniform = shaderInstance.getUniform("Time");
-        decayUniform = shaderInstance.getUniform("Decay");
+    public RenderType renderType(String name, Identifier texture, VertexFormat.Mode mode) {
+        var builder = RenderSetup.builder(pipeline(mode));
+        if (texture != null) builder.withTexture("Sampler0", texture);
+        if (!location.getPath().equals("energy_bar")) builder.useLightmap().useOverlay();
+        var setup = builder.createRenderSetup();
+        var type = RenderType.create(name, setup);
+        ShaderDraw.bind(type, this, setup);
+        return type;
     }
-
-    protected final String missingUniformMessage(String name) {
-        if (shaderInstance == null) return "Shader not yet loaded.";
-
-        return "Shader does not have '" + name + "' uniform.";
-    }
+    public final BCUniform getModelMatUniform() { return uniform(0); }
+    public final BCUniform getTimeUniform() { return uniform(96); }
+    public final BCUniform getDecayUniform() { return uniform(100); }
+    public final boolean hasModelMatUniform() { return true; }
+    public final boolean hasTimeUniform() { return true; }
+    public final boolean hasDecayUniform() { return true; }
 }

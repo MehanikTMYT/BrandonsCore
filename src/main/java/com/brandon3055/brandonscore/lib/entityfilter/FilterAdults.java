@@ -57,19 +57,17 @@ public class FilterAdults extends FilterBase {
         return FilterType.ADULTS;
     }
 
-    @Override
-    public CompoundTag serializeNBT() {
-        CompoundTag compound = super.serializeNBT();
+    public CompoundTag serializeNBT(net.minecraft.core.HolderLookup.Provider registries) {
+        CompoundTag compound = super.serializeNBT(registries);
         compound.putBoolean("include", whitelistAdults);
         compound.putBoolean("tamable", includeNonAgeable);
         return compound;
     }
 
-    @Override
-    public void deserializeNBT(CompoundTag nbt) {
-        super.deserializeNBT(nbt);
-        whitelistAdults = nbt.getBoolean("include");
-        includeNonAgeable = nbt.getBoolean("tamable");
+    public void deserializeNBT(net.minecraft.core.HolderLookup.Provider registries, CompoundTag nbt) {
+        super.deserializeNBT(registries, nbt);
+        whitelistAdults = nbt.getBooleanOr("include", false);
+        includeNonAgeable = nbt.getBooleanOr("tamable", false);
     }
 
     @Override

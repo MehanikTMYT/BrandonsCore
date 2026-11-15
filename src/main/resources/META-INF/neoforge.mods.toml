@@ -1,0 +1,32 @@
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="CoFH \"Don't Be a Jerk\" License; CCL-derived GUI: LGPL-2.1 (see LICENSE-CCL)"
+
+[[mixins]]
+config="mixins.brandonscore.json"
+
+[[mods]]
+modId="brandonscore"
+displayName="Brandon's Core"
+version="${mod_version}"
+authors="brandon3055"
+description="Core library, modular GUI and contributor rendering."
+
+[[dependencies.brandonscore]]
+modId="neoforge"
+type="required"
+versionRange="${neo_version_range}"
+ordering="NONE"
+side="BOTH"
+[[dependencies.brandonscore]]
+modId="minecraft"
+type="required"
+versionRange="${minecraft_version_range}"
+ordering="NONE"
+side="BOTH"
+[[dependencies.brandonscore]]
+modId="codechickenlib"
+type="required"
+versionRange="[4.7.0,)"
+ordering="AFTER"
+side="BOTH"

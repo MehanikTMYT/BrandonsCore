@@ -3,7 +3,6 @@ package com.brandon3055.brandonscore.api;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Rarity;
-import net.minecraft.world.item.Tier;
 
 import java.util.Locale;
 
@@ -49,7 +48,6 @@ public enum TechLevel {
     private final ChatFormatting textColour;
     private Rarity rarity;
     private final int harvestLevel;
-    private Tier itemTier;
     public static final TechLevel[] VALUES = new TechLevel[4];
     public static final TechLevel[] TOOL_LEVELS = new TechLevel[3];
 

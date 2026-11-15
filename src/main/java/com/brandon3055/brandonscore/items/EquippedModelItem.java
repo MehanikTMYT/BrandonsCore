@@ -23,11 +23,10 @@ public interface EquippedModelItem {
      * @param entity The entity on which this model will be rendered.
      * @param stack The item stack instance.
      * @param slot The equipment slot the stack is in, or null if in a modded equipment slot (e.g. curios).
-     * @param parentModel The model of the {@link LivingEntity}. You can copy the properties from this model to yours using {@link net.neoforged.client.ForgeHooksClient#copyModelProperties(HumanoidModel, HumanoidModel)} (If applicable)
+     * @param parentModel The model of the {@code LivingEntity}. You can copy the properties from this model to yours using {@code net.neoforged.neoforge.client.ForgeHooksClient#copyModelProperties(HumanoidModel, HumanoidModel)} (If applicable)
      * @param slimModel This will be true in the event the entity is a player with the slim model enabled.
      * @return a model implementing {@link EquippedItemModel}
      */
-    @OnlyIn(Dist.CLIENT)
     EquippedItemModel getExtendedModel(LivingEntity entity, ItemStack stack, @Nullable EquipmentSlot slot, HumanoidModel<?> parentModel, boolean slimModel);
 
     /**
@@ -49,9 +48,9 @@ public interface EquippedModelItem {
      */
     static void setPartVisibility(HumanoidModel<?> model, @Nullable EquipmentSlot slot) {
         if (slot == null) {
-            model.setAllVisible(true);
+            model.allParts().forEach(part -> part.visible = true);
         } else {
-            model.setAllVisible(false);
+            model.allParts().forEach(part -> part.visible = false);
             switch (slot) {
                 case HEAD:
                     model.head.visible = true;

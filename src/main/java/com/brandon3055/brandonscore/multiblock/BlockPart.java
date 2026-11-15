@@ -5,7 +5,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -16,11 +16,11 @@ import java.util.Collections;
 public class BlockPart implements MultiBlockPart {
     private final Block block;
 
-    public BlockPart(ResourceLocation id) {
-        if (!ForgeRegistries.BLOCKS.containsKey(id)) {
+    public BlockPart(Identifier id) {
+        if (!BuiltInRegistries.BLOCK.containsKey(id)) {
             throw new IllegalStateException("Specified block could not be found: " + id);
         }
-        this.block = ForgeRegistries.BLOCKS.getValue(id);
+        this.block = BuiltInRegistries.BLOCK.getValue(id);
     }
 
     @Override

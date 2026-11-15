@@ -5,7 +5,7 @@ import net.minecraft.world.item.ItemStack;
 
 /**
  * The functonality of this interface is identical to what you would get if you were to implement elytra via
- * {@link net.neoforged.neoforge.common.extensions.IForgeItem#canElytraFly(ItemStack, LivingEntity)} and {@link net.neoforged.neoforge.common.extensions.IForgeItem#elytraFlightTick(ItemStack, LivingEntity, int)}
+ * {@code net.neoforged.neoforge.common.extensions.IItemExtension#canElytraFly(ItemStack, LivingEntity)} and {@code net.neoforged.neoforge.common.extensions.IItemExtension#elytraFlightTick(ItemStack, LivingEntity, int)}
  * With one notable exception. This also works with curios.
  * <p>
  * Also you will need to add a custom elytra layer to the player to render your elytra.

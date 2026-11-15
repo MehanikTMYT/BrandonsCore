@@ -1,13 +1,10 @@
-#version 150
+#version 330
+
+#moj_import <minecraft:dynamictransforms.glsl>
+#moj_import <brandonscore:bc_params.glsl>
+
 
 #moj_import <brandonscore:math.glsl>
-
-uniform float time;
-uniform float charge;
-uniform ivec2 ePos;
-uniform ivec2 eSize;
-uniform ivec2 screenSize;
-uniform vec4 ColorModulator;
 
 out vec4 fragColor;
 

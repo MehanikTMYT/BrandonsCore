@@ -3,14 +3,14 @@ package com.brandon3055.brandonscore.items;
 import com.brandon3055.brandonscore.capability.MultiCapabilityProvider;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.common.extensions.IForgeItem;
+import net.neoforged.neoforge.common.extensions.IItemExtension;
 
 import javax.annotation.Nullable;
 
 @Deprecated //incomplete
-public interface EnergyItemImpl extends IForgeItem {
+public interface EnergyItemImpl extends IItemExtension {
 
-    @Override
+    // Internal collection factory; item capabilities must be registered with RegisterCapabilitiesEvent.
     default MultiCapabilityProvider initCapabilities(ItemStack stack, @Nullable CompoundTag nbt) {
         MultiCapabilityProvider provider = new MultiCapabilityProvider();
         //

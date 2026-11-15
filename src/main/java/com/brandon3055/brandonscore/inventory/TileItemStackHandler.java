@@ -104,33 +104,26 @@ public class TileItemStackHandler extends ItemStackHandler {
         return stackValidator == null || stackValidator.test(slot, stack);
     }
 
-    //I dont want this handler's size to be controlled by NBT
+    // The registered handler size is authoritative, never the serialized data.
     @Override
-    public CompoundTag serializeNBT() {
-        ListTag nbtTagList = new ListTag();
+    public void serialize(net.minecraft.world.level.storage.ValueOutput output) {
+        var items = output.childrenList("Items");
         for (int i = 0; i < stacks.size(); i++) {
-            if (!stacks.get(i).isEmpty()) {
-                CompoundTag itemTag = new CompoundTag();
-                itemTag.putInt("Slot", i);
-                stacks.get(i).save(itemTag);
-                nbtTagList.add(itemTag);
-            }
+            if (stacks.get(i).isEmpty()) continue;
+            var item = items.addChild();
+            item.putInt("Slot", i);
+            item.store(ItemStack.MAP_CODEC, stacks.get(i));
         }
-        CompoundTag nbt = new CompoundTag();
-        nbt.put("Items", nbtTagList);
-        return nbt;
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
+    public void deserialize(net.minecraft.world.level.storage.ValueInput input) {
+        // NonNullList.clear keeps its fixed size and restores EMPTY entries.
         stacks.clear();
-        ListTag tagList = nbt.getList("Items", Tag.TAG_COMPOUND);
-        for (int i = 0; i < tagList.size(); i++) {
-            CompoundTag itemTags = tagList.getCompound(i);
-            int slot = itemTags.getInt("Slot");
-
+        for (var item : input.childrenListOrEmpty("Items")) {
+            int slot = item.getIntOr("Slot", -1);
             if (slot >= 0 && slot < stacks.size()) {
-                stacks.set(slot, ItemStack.of(itemTags));
+                stacks.set(slot, item.read(ItemStack.MAP_CODEC).orElse(ItemStack.EMPTY));
             }
         }
         onLoad();

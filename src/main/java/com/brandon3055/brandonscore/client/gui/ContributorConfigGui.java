@@ -1,12 +1,12 @@
 package com.brandon3055.brandonscore.client.gui;
 
-import codechicken.lib.gui.modular.ModularGui;
-import codechicken.lib.gui.modular.ModularGuiScreen;
-import codechicken.lib.gui.modular.elements.*;
-import codechicken.lib.gui.modular.lib.ColourState;
-import codechicken.lib.gui.modular.lib.Constraints;
-import codechicken.lib.gui.modular.lib.GuiProvider;
-import codechicken.lib.gui.modular.lib.geometry.GeoParam;
+import com.brandon3055.brandonscore.client.gui.modular.ModularGui;
+import com.brandon3055.brandonscore.client.gui.modular.ModularGuiScreen;
+import com.brandon3055.brandonscore.client.gui.modular.elements.*;
+import com.brandon3055.brandonscore.client.gui.modular.lib.ColourState;
+import com.brandon3055.brandonscore.client.gui.modular.lib.Constraints;
+import com.brandon3055.brandonscore.client.gui.modular.lib.GuiProvider;
+import com.brandon3055.brandonscore.client.gui.modular.lib.geometry.GeoParam;
 import codechicken.lib.math.MathHelper;
 import com.brandon3055.brandonscore.client.BCGuiTextures;
 import com.brandon3055.brandonscore.client.gui.GuiToolkit.Palette;
@@ -25,9 +25,9 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static codechicken.lib.gui.modular.lib.Constraints.LayoutPos.*;
-import static codechicken.lib.gui.modular.lib.geometry.Constraint.match;
-import static codechicken.lib.gui.modular.lib.geometry.Constraint.relative;
+import static com.brandon3055.brandonscore.client.gui.modular.lib.Constraints.LayoutPos.*;
+import static com.brandon3055.brandonscore.client.gui.modular.lib.geometry.Constraint.match;
+import static com.brandon3055.brandonscore.client.gui.modular.lib.geometry.Constraint.relative;
 
 
 /**
@@ -243,7 +243,7 @@ public class ContributorConfigGui implements GuiProvider {
         }
     }
 
-    public void mouseScrolled(double mouseX, double mouseY, double scrollAmount) {
+    public void mouseScrolled(double mouseX, double mouseY, double horizontalScroll, double scrollAmount) {
         double size = playerRender.xSize();
         size = (int) MathHelper.clip(size + (scrollAmount * Math.max(size / 10, 1)), 10, 500);
         playerRender.setSize(size, size);

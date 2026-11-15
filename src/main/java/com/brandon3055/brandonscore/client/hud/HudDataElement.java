@@ -1,6 +1,6 @@
 package com.brandon3055.brandonscore.client.hud;
 
-import codechicken.lib.gui.modular.lib.GuiRender;
+import com.brandon3055.brandonscore.client.gui.modular.lib.GuiRender;
 import com.brandon3055.brandonscore.api.hud.AbstractHudElement;
 import com.brandon3055.brandonscore.api.hud.IHudBlock;
 import com.brandon3055.brandonscore.api.hud.IHudDisplay;

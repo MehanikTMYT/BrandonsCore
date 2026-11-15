@@ -12,7 +12,7 @@ import java.util.Locale;
 /**
  * Created by brandon3055 on 7/11/19.
  */
-public abstract class FilterBase implements BCSerializable<CompoundTag>, IMCDataSerializable {
+public abstract class FilterBase implements IMCDataSerializable {
     private final EntityFilter filter;
     protected int nodeID = -1;
     private FilterGroup parent;
@@ -53,16 +53,14 @@ public abstract class FilterBase implements BCSerializable<CompoundTag>, IMCData
         return parent;
     }
 
-    @Override
-    public CompoundTag serializeNBT() {
+    public CompoundTag serializeNBT(net.minecraft.core.HolderLookup.Provider registries) {
         CompoundTag compound = new CompoundTag();
         compound.putInt("node_id", nodeID);
         return compound;
     }
 
-    @Override
-    public void deserializeNBT(CompoundTag compound) {
-        nodeID = compound.getInt("node_id");
+    public void deserializeNBT(net.minecraft.core.HolderLookup.Provider registries, CompoundTag compound) {
+        nodeID = compound.getIntOr("node_id", 0);
         getFilter().trackNode(this);
     }
 

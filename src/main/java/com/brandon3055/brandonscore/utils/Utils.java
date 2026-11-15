@@ -5,7 +5,7 @@ import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.MessageSignature;
 import net.minecraft.server.level.ChunkHolder;
@@ -19,10 +19,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.chunk.ChunkAccess;
-import net.minecraft.world.level.chunk.ChunkStatus;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.material.Fluid;
-import net.neoforged.neoforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
@@ -177,7 +177,7 @@ public class Utils {
      */
     public static int determineOrientation(int x, int y, int z, LivingEntity entity) {
         if (Mth.abs((float) entity.getX() - (float) x) < 2.0F && Mth.abs((float) entity.getZ() - (float) z) < 2.0F) {
-            double d0 = entity.getY() + 1.82D - (double) entity.getMyRidingOffset();
+            double d0 = entity.getEyeY();
 
             if (d0 - (double) y > 2.0D) return 0;
 
@@ -391,7 +391,7 @@ public class Utils {
     public static Fluid lookupFluidForBlock(Block block) {
         if (fluidBlocks == null) {
             BiMap<Block, Fluid> tmp = HashBiMap.create();
-            for (Fluid fluid : ForgeRegistries.FLUIDS.getValues()) {
+            for (Fluid fluid : BuiltInRegistries.FLUID.stream().toList()) {
                 Block fluidBlock = fluid.defaultFluidState().createLegacyBlock().getBlock();
                 if (fluidBlock != Blocks.AIR) {
                     tmp.put(fluidBlock, fluid);

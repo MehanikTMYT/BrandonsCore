@@ -1,6 +1,6 @@
 package com.brandon3055.brandonscore.client.gui.modulargui.templates;
 
-import codechicken.lib.gui.modular.ModularGui;
+import com.brandon3055.brandonscore.client.gui.modular.ModularGui;
 import com.brandon3055.brandonscore.client.gui.GuiToolkit;
 
 /**

@@ -1,11 +1,11 @@
 package com.brandon3055.brandonscore.client.gui;
 
-import codechicken.lib.gui.modular.ModularGui;
-import codechicken.lib.gui.modular.ModularGuiScreen;
-import codechicken.lib.gui.modular.elements.GuiButton;
-import codechicken.lib.gui.modular.elements.GuiElement;
-import codechicken.lib.gui.modular.lib.*;
-import codechicken.lib.gui.modular.lib.geometry.GuiParent;
+import com.brandon3055.brandonscore.client.gui.modular.ModularGui;
+import com.brandon3055.brandonscore.client.gui.modular.ModularGuiScreen;
+import com.brandon3055.brandonscore.client.gui.modular.elements.GuiButton;
+import com.brandon3055.brandonscore.client.gui.modular.elements.GuiElement;
+import com.brandon3055.brandonscore.client.gui.modular.lib.*;
+import com.brandon3055.brandonscore.client.gui.modular.lib.geometry.GuiParent;
 import com.brandon3055.brandonscore.api.hud.AbstractHudElement;
 import com.brandon3055.brandonscore.client.BCGuiTextures;
 import com.brandon3055.brandonscore.client.hud.HudData;
@@ -19,7 +19,7 @@ import org.joml.Matrix4f;
 
 import java.awt.*;
 
-import static codechicken.lib.gui.modular.lib.Constraints.LayoutPos.*;
+import static com.brandon3055.brandonscore.client.gui.modular.lib.Constraints.LayoutPos.*;
 
 
 /**
@@ -44,7 +44,7 @@ public class HudConfigGui implements GuiProvider {
 
         gui.onClose(HudData::saveIfDirty);
         gui.onKeyPressPost((key, scancode, modifiers) -> {
-            InputConstants.Key input = InputConstants.getKey(key, scancode);
+            InputConstants.Key input = InputConstants.getKey(new net.minecraft.client.input.KeyEvent(key, scancode, modifiers));
             if (gui.mc().options.keyInventory.isActiveAndMatches(input)) {
                 gui.getScreen().onClose();
             }
@@ -146,24 +146,22 @@ public class HudConfigGui implements GuiProvider {
             float bgAnim = Math.min(this.bgAnim + (partialTicks * 0.1F), 1);
             render.rect(getRectangle(), ((int) (0x8F * bgAnim) << 24));
 
-            VertexConsumer buffer = render.buffers().getBuffer(GuiRender.SOLID);
-            Matrix4f mat = render.pose().last().pose();
 
             double boarderLength = w * 2 + h * 2;
             double bp = boarderLength * borderAnim;
             if (bp > 0) {
                 double sw = Math.min(w, bp);
                 //Top Boarder
-                drawGradientQuad(buffer, mat, x, y, x + sw, y, x + sw - 1, y + 1, x + 1, y + 1, 0xFF000000, colour);
-                drawGradientQuad(buffer, mat, x + 1, y + 1, x + sw - 1, y + 1, x + sw - 2, y + 2, x + 2, y + 2, colour, 0xFF000000);
+                drawGradientQuad(render, x, y, x + sw, y, x + sw - 1, y + 1, x + 1, y + 1, 0xFF000000, colour);
+                drawGradientQuad(render, x + 1, y + 1, x + sw - 1, y + 1, x + sw - 2, y + 2, x + 2, y + 2, colour, 0xFF000000);
             }
 
             if (bp - w > 0) {
                 double sh = Math.min(h, bp - w);
                 double p = sh / h;
                 //Right Boarder
-                drawGradientQuad(buffer, mat, x + w, y, x + w, y + sh, x + w - 1, y + sh - 1 * p, x + w - 1, y + 1, 0xFF000000, colour);
-                drawGradientQuad(buffer, mat, x + w - 1, y + 1, x + w - 1, y + sh - 1, x + w - 2, y + sh - 2 * p, x + w - 2, y + 2, colour, 0xFF000000);
+                drawGradientQuad(render, x + w, y, x + w, y + sh, x + w - 1, y + sh - 1 * p, x + w - 1, y + 1, 0xFF000000, colour);
+                drawGradientQuad(render, x + w - 1, y + 1, x + w - 1, y + sh - 1, x + w - 2, y + sh - 2 * p, x + w - 2, y + 2, colour, 0xFF000000);
             }
 
             if (bp - w - h > 0) {
@@ -171,8 +169,8 @@ public class HudConfigGui implements GuiProvider {
                 double sx = x + w - sw;
                 double p = sw / w;
                 //Bottom Boarder
-                drawGradientQuad(buffer, mat, sx + 2 * p, y + h - 2, sx + sw - 2, y + h - 2, sx + sw - 1, y + h - 1, sx + 1, y + h - 1, 0xFF000000, colour);
-                drawGradientQuad(buffer, mat, sx + 1 * p, y + h - 1, sx + sw - 1, y + h - 1, sx + sw, y + h, sx, y + h, colour, 0xFF000000);
+                drawGradientQuad(render, sx + 2 * p, y + h - 2, sx + sw - 2, y + h - 2, sx + sw - 1, y + h - 1, sx + 1, y + h - 1, 0xFF000000, colour);
+                drawGradientQuad(render, sx + 1 * p, y + h - 1, sx + sw - 1, y + h - 1, sx + sw, y + h, sx, y + h, colour, 0xFF000000);
             }
 
             if (bp - w - h - w > 0) {
@@ -180,31 +178,20 @@ public class HudConfigGui implements GuiProvider {
                 double sy = y + h - sh;
                 double p = sh / h;
                 //Left Boarder
-                drawGradientQuad(buffer, mat, x + 1, sy + 1 * p, x + 1, sy + sh - 1, x, sy + sh, x, sy, colour, 0xFF000000);
-                drawGradientQuad(buffer, mat, x + 2, sy + 2 * p, x + 2, sy + sh - 2, x + 1, sy + sh - 1, x + 1, sy + 1 * p, 0xFF000000, colour);
+                drawGradientQuad(render, x + 1, sy + 1 * p, x + 1, sy + sh - 1, x, sy + sh, x, sy, colour, 0xFF000000);
+                drawGradientQuad(render, x + 2, sy + 2 * p, x + 2, sy + sh - 2, x + 1, sy + sh - 1, x + 1, sy + 1 * p, 0xFF000000, colour);
             }
 
             render.flush();
         }
 
-        private void drawGradientQuad(VertexConsumer buffer, Matrix4f mat, double p1A, double p1B, double p2A, double p2B, double p3A, double p3B, double p4A, double p4B, int startColor, int endColor) {
+        private void drawGradientQuad(GuiRender render, double p1A, double p1B, double p2A, double p2B, double p3A, double p3B, double p4A, double p4B, int startColor, int endColor) {
             if (startColor == endColor && endColor == 0) return;
-            //@formatter:off
-            float startAlpha = (float)(startColor >> 24 & 255) / 255.0F;
-            float startRed   = (float)(startColor >> 16 & 255) / 255.0F;
-            float startGreen = (float)(startColor >>  8 & 255) / 255.0F;
-            float startBlue  = (float)(startColor       & 255) / 255.0F;
-            float endAlpha   = (float)(endColor   >> 24 & 255) / 255.0F;
-            float endRed     = (float)(endColor   >> 16 & 255) / 255.0F;
-            float endGreen   = (float)(endColor   >>  8 & 255) / 255.0F;
-            float endBlue    = (float)(endColor         & 255) / 255.0F;
-
-            buffer.vertex(mat, (float) p4A, (float) p4B, 0).color(  endRed,   endGreen,   endBlue,   endAlpha).endVertex();
-            buffer.vertex(mat, (float) p3A, (float) p3B, 0).color(  endRed,   endGreen,   endBlue,   endAlpha).endVertex();
-            buffer.vertex(mat, (float) p2A, (float) p2B, 0).color(startRed, startGreen, startBlue, startAlpha).endVertex();
-            buffer.vertex(mat, (float) p1A, (float) p1B, 0).color(startRed, startGreen, startBlue, startAlpha).endVertex();
-            //@formatter:on
+            render.colouredQuad(new float[]{(float) p4A, (float) p3A, (float) p2A, (float) p1A},
+                    new float[]{(float) p4B, (float) p3B, (float) p2B, (float) p1B},
+                    new int[]{endColor, endColor, startColor, startColor});
         }
+
     }
 
     //Dedicated screen class provided for better compatibility with other mods.

@@ -1,9 +1,9 @@
 package com.brandon3055.brandonscore.handlers;
 
 import net.covers1624.quack.util.CrashLock;
-import net.neoforged.neoforge.common.MinecraftForge;
-import net.neoforged.event.TickEvent;
-import net.neoforged.event.server.ServerStoppedEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -13,7 +13,7 @@ import java.util.List;
  * This is a class used to run processes that implement IProcess.
  * Processes are similar to tile entities except that they are not bound to anything and they are not currently
  * persistent (they will be deleted when the world closes)
- * <p/>
+ * <p>
  * Created by brandon3055 on 12/8/2015.
  */
 
@@ -30,8 +30,8 @@ public class ProcessHandler {
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(ProcessHandler::onServerStop);
     }
 
-    public static void onServerTick(TickEvent.ServerTickEvent event) {
-        if (event.phase == TickEvent.Phase.START) {
+    public static void onServerTick(ServerTickEvent.Pre event) {
+        {
             Iterator<IProcess> i = processes.iterator();
 
             while (i.hasNext()) {

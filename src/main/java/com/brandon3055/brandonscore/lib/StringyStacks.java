@@ -7,7 +7,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.neoforged.neoforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -50,8 +50,8 @@ public class StringyStacks {
      * @param stackString The stack string
      * @return An item stack. Will default to empty stack if stack string is invalid.
      */
-    public static ItemStack fromString(final String stackString) {
-        return fromString(stackString, ItemStack.EMPTY);
+    public static ItemStack fromString(net.minecraft.core.HolderLookup.Provider registries, final String stackString) {
+        return fromString(registries, stackString, ItemStack.EMPTY);
     }
 
     /**
@@ -73,7 +73,7 @@ public class StringyStacks {
      * @param defaultIfInputInvalid The default stack to return iin the event the stack string is invalid. (This can be null)
      * @return An item stack. Will default to defaultIfInputInvalid stack if stack string is invalid.
      */
-    public static ItemStack fromString(final String stackString, @Nullable ItemStack defaultIfInputInvalid) {
+    public static ItemStack fromString(net.minecraft.core.HolderLookup.Provider registries, final String stackString, @Nullable ItemStack defaultIfInputInvalid) {
         if (stackString.isEmpty()) {
             return ItemStack.EMPTY;
         }
@@ -107,19 +107,19 @@ public class StringyStacks {
 
         CompoundTag tagNBT = null;
         if (stackStr.startsWith("{")) {
-            if (!stackString.contains("}") || stackStr.lastIndexOf("}") < stackString.indexOf("{")) {
+            if (!stackString.contains("}") || stackStr.lastIndexOf("}") < stackStr.indexOf("{")) {
                 LOGGER.warn("Detected invalid NBT definition on stack string - " + stackString);
                 return defaultIfInputInvalid;
             } else {
                 String tag = stackStr.substring(0, stackStr.lastIndexOf("}") + 1);
                 try {
-                    tagNBT = TagParser.parseTag(tag);
+                    tagNBT = TagParser.parseCompoundFully(tag);
                 }
                 catch (Throwable e) {
                     LOGGER.warn("Failed to parse stack nbt from string - " + tag + ", on stack string - " + stackString + ". error: " + e.getMessage());
                     return defaultIfInputInvalid;
                 }
-                stackStr = stackString.substring(tag.length());
+                stackStr = stackStr.substring(tag.length());
             }
         }
 
@@ -134,29 +134,26 @@ public class StringyStacks {
             }
         }
 
-        CompoundTag stackNBT = new CompoundTag();
-        stackNBT.putString("id", itemID);
-        stackNBT.putByte("Count", (byte) count);
-        if (tagNBT != null && !tagNBT.isEmpty()) {
-            if (tagNBT.size() == 2 && tagNBT.contains("tag", 10) && tagNBT.contains("ForgeCaps")) {
-                CompoundTag tag = tagNBT.getCompound("tag");
-                if (!tag.isEmpty()) {
-                    stackNBT.put("tag", tag);
+        try {
+            CompoundTag stackNBT = new CompoundTag();
+            stackNBT.putString("id", itemID);
+            stackNBT.putInt("count", count);
+            if (tagNBT != null && !tagNBT.isEmpty()) {
+                if (tagNBT.get("components") instanceof CompoundTag components) {
+                    stackNBT.put("components", components);
+                } else {
+                    // Legacy arbitrary NBT remains custom data. Historical ForgeCaps
+                    // have no automatic mapping to a modern capability/component.
+                    CompoundTag components = new CompoundTag();
+                    components.put("minecraft:custom_data", tagNBT);
+                    stackNBT.put("components", components);
                 }
-                CompoundTag caps = tagNBT.getCompound("ForgeCaps");
-                if (!caps.isEmpty()) {
-                    stackNBT.put("ForgeCaps", caps);
-                }
-            } else {
-                stackNBT.put("tag", tagNBT);
             }
-        }
-
-        ItemStack stack = ItemStack.of(stackNBT);
-        if (stack == ItemStack.EMPTY) { //Specifically comparing to the EMPTY instance as that instance will be returned if an error occurs while loading the stack from NBT.
+            return ItemStack.CODEC.parse(registries.createSerializationContext(net.minecraft.nbt.NbtOps.INSTANCE), stackNBT).getOrThrow();
+        } catch (RuntimeException ex) {
+            LOGGER.warn("Failed to decode stack string {}: {}", stackString, ex.getMessage());
             return defaultIfInputInvalid;
         }
-        return stack;
     }
 
     private static ItemStack legacyFromString(String string, @Nullable ItemStack defaultIfInputInvalid) {
@@ -226,7 +223,7 @@ public class StringyStacks {
         }
         if (!nbt.isEmpty()) {
             try {
-                compound = TagParser.parseTag(nbt);
+                compound = TagParser.parseCompoundFully(nbt);
             }
             catch (Exception e) {
                 LOGGER.warn("Failed to parse stack nbt from string - " + nbt + " error: " + e.getMessage());
@@ -234,9 +231,9 @@ public class StringyStacks {
             }
         }
 
-        ResourceLocation registryName = new ResourceLocation(stackString);
-        Item item = ForgeRegistries.ITEMS.getValue(registryName);
-        Block block = ForgeRegistries.BLOCKS.getValue(registryName);
+        Identifier registryName = Identifier.parse(stackString);
+        Item item = BuiltInRegistries.ITEM.getValue(registryName);
+        Block block = BuiltInRegistries.BLOCK.getValue(registryName);
         if (item == null && block == Blocks.AIR) {
             return defaultIfInputInvalid;
         } else {
@@ -249,40 +246,29 @@ public class StringyStacks {
             itemStack.setDamageValue(meta);
 
             if (compound != null) {
-                itemStack.setTag(compound);
+                itemStack.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.of(compound));
             }
             return itemStack;
         }
     }
 
-    public static String toString(ItemStack stack, boolean withNBT, boolean withCount, boolean withForgeCaps) {
+    public static String toString(net.minecraft.core.HolderLookup.Provider registries, ItemStack stack, boolean withNBT, boolean withCount, boolean withForgeCaps) {
         if (stack.isEmpty()) {
             return "";
         }
 
-        String stackString = ForgeRegistries.ITEMS.getKey(stack.getItem()).toString();
+        String stackString = BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
 
         if (withNBT || withForgeCaps) {
-            CompoundTag stackTag = stack.serializeNBT();
-            CompoundTag nbt = null;
-            CompoundTag caps = null;
-            if (withNBT && stackTag.contains("tag", 10)) {
-                nbt = stackTag.getCompound("tag");
-            }
-            if (withForgeCaps && stackTag.contains("ForgeCaps")) {
-                caps = stackTag.getCompound("ForgeCaps");
-            }
-            CompoundTag stringTag = null;
-            if (nbt != null && caps == null) {
-                stringTag = nbt;
-            } else if (caps != null) {
-                stringTag = new CompoundTag();
-                stringTag.put("ForgeCaps", caps);
-                stringTag.put("tag", nbt == null ? new CompoundTag() : nbt);
-            }
-
-            if (stringTag != null && !stringTag.isEmpty()) {
-                stackString += stringTag.toString();
+            CompoundTag stackTag = (CompoundTag) ItemStack.CODEC.encodeStart(
+                    registries.createSerializationContext(net.minecraft.nbt.NbtOps.INSTANCE), stack).getOrThrow();
+            CompoundTag components = stackTag.getCompoundOrEmpty("components").copy();
+            // Capability persistence is component-based in 26; there is no
+            // separate ForgeCaps blob to select independently.
+            if (!components.isEmpty()) {
+                CompoundTag data = new CompoundTag();
+                data.put("components", components);
+                stackString += data;
             }
         }
 
@@ -296,23 +282,23 @@ public class StringyStacks {
     /**
      * Includes everything except capabilities.
      * */
-    public static String toStringNoCaps(ItemStack stack) {
-        return toString(stack, true, true, false);
+    public static String toStringNoCaps(net.minecraft.core.HolderLookup.Provider registries, ItemStack stack) {
+        return toString(registries, stack, true, true, false);
     }
 
     /**
      * Default toString Method includes all item data including capabilities if they are present.
      */
-    public static String toString(ItemStack stack) {
-        return toString(stack, true, true, true);
+    public static String toString(net.minecraft.core.HolderLookup.Provider registries, ItemStack stack) {
+        return toString(registries, stack, true, true, true);
     }
 
     @Deprecated
     public static ItemStack legacyStackConverter(String itemString, int count, int damage, @Nullable CompoundTag nbt) {
         try {
-            ResourceLocation itemID = new ResourceLocation(itemString);
-            Item item = ForgeRegistries.ITEMS.getValue(itemID);
-            Block block = ForgeRegistries.BLOCKS.getValue(itemID);
+            Identifier itemID = Identifier.parse(itemString);
+            Item item = BuiltInRegistries.ITEM.getValue(itemID);
+            Block block = BuiltInRegistries.BLOCK.getValue(itemID);
             if (item == null && block == Blocks.AIR) {
                 return ItemStack.EMPTY;
             } else {
@@ -325,7 +311,7 @@ public class StringyStacks {
                 itemStack.setDamageValue(damage);
 
                 if (nbt != null) {
-                    itemStack.setTag(nbt.copy());
+                    itemStack.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.of(nbt.copy()));
                 }
                 return itemStack;
             }

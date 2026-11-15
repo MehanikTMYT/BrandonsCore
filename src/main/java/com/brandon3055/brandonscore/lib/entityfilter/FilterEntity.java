@@ -5,7 +5,7 @@ import codechicken.lib.data.MCDataOutput;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
-import net.neoforged.neoforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 /**
  * Created by brandon3055 on 7/11/19.
@@ -43,7 +43,7 @@ public class FilterEntity extends FilterBase {
 
     @Override
     public boolean test(Entity entity) {
-        ResourceLocation res = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType());
+        Identifier res = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
         if (entityName.isEmpty() || res == null) {
             return !whitelistEntity;
         }
@@ -56,19 +56,17 @@ public class FilterEntity extends FilterBase {
         return FilterType.ENTITY_TYPE;
     }
 
-    @Override
-    public CompoundTag serializeNBT() {
-        CompoundTag compound = super.serializeNBT();
+    public CompoundTag serializeNBT(net.minecraft.core.HolderLookup.Provider registries) {
+        CompoundTag compound = super.serializeNBT(registries);
         compound.putBoolean("include", whitelistEntity);
         compound.putString("name", entityName);
         return compound;
     }
 
-    @Override
-    public void deserializeNBT(CompoundTag nbt) {
-        super.deserializeNBT(nbt);
-        whitelistEntity = nbt.getBoolean("include");
-        entityName = nbt.getString("name");
+    public void deserializeNBT(net.minecraft.core.HolderLookup.Provider registries, CompoundTag nbt) {
+        super.deserializeNBT(registries, nbt);
+        whitelistEntity = nbt.getBooleanOr("include", false);
+        entityName = nbt.getStringOr("name", "");
     }
 
     @Override

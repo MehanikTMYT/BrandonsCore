@@ -17,17 +17,17 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.MinecraftForge;
-import net.neoforged.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.bus.api.Event;
 
 public class ServerPacketHandler implements ICustomPacketHandler.IServerPacketHandler {
 
     @Override
-    public void handlePacket(PacketCustom packet, ServerPlayer sender, ServerGamePacketListenerImpl handler) {
+    public void handlePacket(PacketCustom packet, ServerPlayer sender) {
         switch (packet.getType()) {
-            case BCoreNetwork.S_CONTAINER_MESSAGE -> handleContainerMessage(packet, sender, handler);
-            case BCoreNetwork.S_TILE_DATA_MANAGER -> handleTileDataManager(packet, sender, handler);
+            case BCoreNetwork.S_CONTAINER_MESSAGE -> handleContainerMessage(packet, sender, sender.connection);
+            case BCoreNetwork.S_TILE_DATA_MANAGER -> handleTileDataManager(packet, sender, sender.connection);
             case BCoreNetwork.S_CONTRIBUTOR_CONFIG -> ContributorHandler.handleSettingsFromClient(sender, packet);
             case BCoreNetwork.S_CONTRIBUTOR_LINK -> ContributorHandler.handleClientLink(sender);
         }
@@ -62,6 +62,6 @@ public class ServerPacketHandler implements ICustomPacketHandler.IServerPacketHa
         BlockHitResult traceResult = new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false);
         PlayerInteractEvent.RightClickBlock event = new PlayerInteractEvent.RightClickBlock(player, InteractionHand.MAIN_HAND, pos, traceResult);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(event);
-        return event.getResult() != Event.Result.DENY;
+        return !event.isCanceled() && event.getUseBlock() != net.minecraft.util.TriState.FALSE && event.getUseItem() != net.minecraft.util.TriState.FALSE;
     }
 }

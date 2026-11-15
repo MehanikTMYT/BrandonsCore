@@ -16,7 +16,8 @@ public class SlotMover {
     }
 
     public void setPos(int xPos, int yPos) {
-        slot.x = xPos;
-        slot.y = yPos;
+        var access = (com.brandon3055.brandonscore.mixin.SlotPositionAccessor) slot;
+        access.brandonscore$setX(xPos);
+        access.brandonscore$setY(yPos);
     }
 }

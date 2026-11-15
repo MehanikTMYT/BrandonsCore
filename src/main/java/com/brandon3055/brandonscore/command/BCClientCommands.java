@@ -12,7 +12,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -44,7 +44,7 @@ public class BCClientCommands {
 
 //    private static ArgumentBuilder<CommandSourceStack, ?> testGui() {
 //        return Commands.literal("testui")
-//                .requires(cs -> cs.hasPermission(0))
+//                .requires(net.minecraft.commands.Commands.hasPermission(net.minecraft.commands.Commands.LEVEL_ALL))
 //                .then(Commands.literal("mgui")
 //                        .executes(context -> {
 //                            DelayedTask.client(10, () -> Minecraft.getInstance().setScreen(new ModularGuiTest(Component.literal("Test"))));
@@ -59,7 +59,7 @@ public class BCClientCommands {
 
     private static ArgumentBuilder<CommandSourceStack, ?> hudConfig() {
         return Commands.literal("hudconfig")
-                .requires(cs -> cs.hasPermission(0))
+                .requires(net.minecraft.commands.Commands.hasPermission(net.minecraft.commands.Commands.LEVEL_ALL))
                 .executes(context -> {
                     DelayedTask.client(10, () -> Minecraft.getInstance().setScreen(new HudConfigGui.Screen()));
                     return 0;
@@ -68,7 +68,7 @@ public class BCClientCommands {
 
     private static ArgumentBuilder<CommandSourceStack, ?> contributor() {
         return Commands.literal("contributor")
-                .requires(cs -> cs.hasPermission(0))
+                .requires(net.minecraft.commands.Commands.hasPermission(net.minecraft.commands.Commands.LEVEL_ALL))
                 .executes(context -> {
                     Player player = ClientOnly.getClientPlayer();
                     ContributorProperties props = ContributorHandler.getProps(player);
@@ -81,13 +81,13 @@ public class BCClientCommands {
                         player.sendSystemMessage(Component.literal("Contributor perks are purely aesthetic features offered to those who support Draconic Evolution.").withStyle(GREEN));
                         player.sendSystemMessage(Component.literal("You can find more information on my patreon page: ").withStyle(GREEN));
                         MutableComponent link = Component.literal("www.patreon.com/brandon3055").setStyle(Style.EMPTY
-                                .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://www.patreon.com/brandon3055"))
-                                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Click to open or copy link"))));
+                                .withClickEvent(new ClickEvent.OpenUrl(java.net.URI.create("https://www.patreon.com/brandon3055")))
+                                .withHoverEvent(new HoverEvent.ShowText(Component.literal("Click to open or copy link"))));
                         player.sendSystemMessage(link.withStyle(BLUE, UNDERLINE));
                         player.sendSystemMessage(Component.literal(""));
                         MutableComponent notLinked = Component.literal("Please Click Here").setStyle(Style.EMPTY
-                                .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/bcore_client contributor help"))
-                                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Click for help"))));
+                                .withClickEvent(new ClickEvent.SuggestCommand("/bcore_client contributor help"))
+                                .withHoverEvent(new HoverEvent.ShowText(Component.literal("Click for help"))));
                         player.sendSystemMessage(Component.literal("Already a contributor? ").withStyle(LIGHT_PURPLE).append(notLinked.withStyle(BLUE)));
                         return 0;
                     }
@@ -104,8 +104,8 @@ public class BCClientCommands {
                                     "If you are playing in offline mode your contributor status can not be verified. " +
                                     "Or your client might not be able to contact the contributor API for some reason.").withStyle(GRAY));
                             MutableComponent link = Component.literal("DE Discord").setStyle(Style.EMPTY
-                                    .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://discord.gg/e2HBEtF"))
-                                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Click to open or copy link"))));
+                                    .withClickEvent(new ClickEvent.OpenUrl(java.net.URI.create("https://discord.gg/e2HBEtF")))
+                                    .withHoverEvent(new HoverEvent.ShowText(Component.literal("Click to open or copy link"))));
                             player.sendSystemMessage(Component.literal("If you need help you can request assistance via the ").withStyle(GREEN).append(link.withStyle(BLUE, UNDERLINE)));
                             return 0;
                         })

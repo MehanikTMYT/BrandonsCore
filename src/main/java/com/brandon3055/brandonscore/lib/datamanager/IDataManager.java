@@ -10,6 +10,9 @@ import net.minecraft.nbt.CompoundTag;
  */
 public interface IDataManager {
 
+    /** Registry context for component-bearing values such as ItemStack. */
+    net.minecraft.core.RegistryAccess registryAccess();
+
     /**
      * Use this to detect and send changes to the client via your own sync packet. See {@link TileDataManager} for an example
      * This should be called by your tile, container, etc every tick.

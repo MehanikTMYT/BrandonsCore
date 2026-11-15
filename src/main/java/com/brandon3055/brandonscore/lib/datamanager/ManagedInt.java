@@ -90,7 +90,7 @@ public class ManagedInt extends AbstractManagedData<Integer> {
 
     @Override
     public void fromNBT(CompoundTag compound) {
-        value = compound.getInt(name);
+        value = compound.getIntOr(name, 0);
         notifyListeners(value);
     }
 

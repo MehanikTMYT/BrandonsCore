@@ -1,10 +1,10 @@
 package com.brandon3055.brandonscore.utils;
 
 import net.covers1624.quack.util.CrashLock;
-import net.neoforged.client.event.RenderGuiOverlayEvent;
-import net.neoforged.client.event.RenderLevelStageEvent;
-import net.neoforged.neoforge.common.MinecraftForge;
-import net.neoforged.event.TickEvent;
+import net.neoforged.neoforge.client.event.RenderGuiEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 
 import java.util.*;
@@ -31,8 +31,8 @@ public class BCProfiler {
     }
 
     @SubscribeEvent
-    public void clientTick(TickEvent.ClientTickEvent event) {
-        if (!enableProfiler || event.phase != TickEvent.Phase.END) {
+    public void clientTick(ClientTickEvent.Post event) {
+        if (!enableProfiler) {
             return;
         }
 
@@ -42,38 +42,27 @@ public class BCProfiler {
     }
 
     @SubscribeEvent
-    public void renderWorldLast(RenderLevelStageEvent event) {
-        if (!enableProfiler || event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES) return;
+    public void renderWorldLast(RenderLevelStageEvent.AfterTranslucentParticles event) {
+        if (!enableProfiler) return;
         renderDebug.clear();
         RENDER.dumpDebug(renderDebug);
         RENDER.update();
     }
 
     @SubscribeEvent
-    public void render(RenderGuiOverlayEvent.Post event) {
-//        Minecraft mc = Minecraft.getInstance();
-//        if (!enableProfiler || event.getType() != RenderGameOverlayEvent.ElementType.ALL || mc.options.renderDebug) {
-//            return;
-//        }
-//
-////        ScaledResolution res = event.getResolution();
-//        GlStateManager._pushMatrix();
-//        GlStateManager._scaled(1D / mc.getWindow().getGuiScale(), 1D / mc.getWindow().getGuiScale(), 1);
-//        GlStateManager._scaled(2, 2, 1);
-//
-//        int y = 0;
-//        List<String> debug = new ArrayList<>();
-//        debug.add(String.format("BCore Profiler: %smin time%s, %smax time%s, %saverage time%s - (Over " + timingTicks / 20 + " seconds)", GREEN, RESET, RED, RESET, YELLOW, RESET));
-//        debug.add("");
-//        debug.addAll(tickDebug);
-//        debug.addAll(renderDebug);
-//        for (String s: debug) {
-//            GuiHelperOld.drawColouredRect(0, y, mc.font.width(s) + 5, 10, 0x90000000);
-//            mc.font.draw(event.getMatrixStack(), s, 2, y + 1, 0xFFFFFF);
-//            y += 10;
-//        }
-//
-//        GlStateManager._popMatrix();
+    public void render(RenderGuiEvent.Post event) {
+        if (!enableProfiler) return;
+        var render = com.brandon3055.brandonscore.client.gui.modular.lib.GuiRender.convert(event.getGuiGraphics());
+        List<String> lines = new ArrayList<>();
+        lines.add("BrandonsCore profiler");
+        lines.addAll(tickDebug);
+        lines.addAll(renderDebug);
+        int y = 0;
+        for (String line : lines) {
+            render.rect(0, y, render.font().width(line) + 5, 10, 0x90000000);
+            render.drawString(line, 2, y + 1, 0xFFFFFFFF);
+            y += 10;
+        }
     }
 
 

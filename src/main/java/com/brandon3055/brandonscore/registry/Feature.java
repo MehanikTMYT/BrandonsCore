@@ -4,7 +4,7 @@
 //import com.brandon3055.brandonscore.utils.DataUtils;
 //import net.minecraft.item.BlockItem;
 //import net.minecraft.tileentity.TileEntity;
-//import net.minecraft.util.ResourceLocation;
+//import net.minecraft.util.Identifier;
 //
 //import java.util.HashMap;
 //import java.util.Map;
@@ -18,7 +18,7 @@
 //
 //    private final String modid;
 //    private final String name;
-//    private final ResourceLocation registryName;
+//    private final Identifier registryName;
 //    private final boolean canBeDisabled;
 //    private boolean isActive;
 //    private final boolean hasItemBlock;
@@ -32,7 +32,7 @@
 //    private Feature(String modid, ModFeature modFeature) {
 //        this.modid = modid;
 //        this.name = modFeature.name();
-//        this.registryName = new ResourceLocation(modid, name);
+//        this.registryName = Identifier.fromNamespaceAndPath(modid, name);
 //        this.canBeDisabled = modFeature.canBeDisabled();
 //        this.isActive = modFeature.isActive();
 //        this.creativeTab = modFeature.cTab();
@@ -62,7 +62,7 @@
 //    /**
 //     * @return The fill registry resource location for this feature.
 //     */
-//    public ResourceLocation getRegistryName() {
+//    public Identifier getRegistryName() {
 //        return registryName;
 //    }
 //

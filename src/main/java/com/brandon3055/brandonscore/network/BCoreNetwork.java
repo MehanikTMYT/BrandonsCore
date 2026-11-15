@@ -1,7 +1,7 @@
 package com.brandon3055.brandonscore.network;
 
 import codechicken.lib.packet.PacketCustom;
-import codechicken.lib.packet.PacketCustomChannelBuilder;
+import codechicken.lib.packet.PacketCustomChannel;
 import codechicken.lib.util.ServerUtils;
 import codechicken.lib.vec.Vector3;
 import com.brandon3055.brandonscore.BrandonsCore;
@@ -24,9 +24,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.network.NetworkDirection;
-import net.neoforged.network.event.EventNetworkChannel;
-import net.neoforged.neoforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 import java.util.Map;
 
@@ -36,8 +34,8 @@ import java.util.Map;
 public class BCoreNetwork {
     private static final CrashLock LOCK = new CrashLock("Already Initialized.");
 
-    public static final ResourceLocation CHANNEL = new ResourceLocation(BrandonsCore.MODID + ":network");
-    public static EventNetworkChannel netChannel;
+    public static final Identifier CHANNEL = Identifier.parse(BrandonsCore.MODID + ":network");
+    public static PacketCustomChannel netChannel;
 
     //Server to client
     public static final int C_TILE_DATA_MANAGER = 1;
@@ -64,34 +62,34 @@ public class BCoreNetwork {
     public static final int S_DUMMY_PACKET = 99;
 
     public static void sendNoClip(ServerPlayer player, boolean enabled) {
-        PacketCustom packet = new PacketCustom(CHANNEL, C_NO_CLIP);
+        PacketCustom packet = new PacketCustom(CHANNEL, C_NO_CLIP, player.registryAccess());
         packet.writeBoolean(enabled);
         packet.sendToPlayer(player);
         LogHelperBC.dev("Sending NoClip update to player: " + player + " Enabled: " + enabled);
     }
 
     public static void sendOpenPlayerAccessUI(ServerPlayer player, int windowID) {
-        PacketCustom packet = new PacketCustom(CHANNEL, C_PLAYER_ACCESS);
+        PacketCustom packet = new PacketCustom(CHANNEL, C_PLAYER_ACCESS, player.registryAccess());
         packet.writeInt(windowID);
         packet.sendToPlayer(player);
     }
 
     public static void sendPlayerAccessUIUpdate(ServerPlayer player, Player target) {
-        PacketCustom packet = new PacketCustom(CHANNEL, C_PLAYER_ACCESS_UPDATE);
-        packet.writeString(target.getGameProfile().getName());
+        PacketCustom packet = new PacketCustom(CHANNEL, C_PLAYER_ACCESS_UPDATE, player.registryAccess());
+        packet.writeString(target.getGameProfile().name());
         packet.writePos(target.blockPosition());
 //        packet.writeInt(target.dimension.getId());
 //        packet.sendToPlayer(player);
     }
 
     public static void sendPlayerAccessButton(int button) {
-        PacketCustom packet = new PacketCustom(CHANNEL, S_PLAYER_ACCESS_BUTTON);
+        PacketCustom packet = new PacketCustom(CHANNEL, S_PLAYER_ACCESS_BUTTON, null);
         packet.writeByte(button);
         packet.sendToServer();
     }
 
     public static void sendIndexedMessage(ServerPlayer player, Component message, MessageSignature signature) {
-        PacketCustom packet = new PacketCustom(CHANNEL, C_INDEXED_MESSAGE);
+        PacketCustom packet = new PacketCustom(CHANNEL, C_INDEXED_MESSAGE, player.registryAccess());
         packet.writeTextComponent(message);
         packet.writeBytes(signature.bytes());
         packet.sendToPlayer(player);
@@ -107,26 +105,25 @@ public class BCoreNetwork {
 
     public static void sendSound(Level world, BlockPos pos, SoundEvent sound, SoundSource category, float volume, float pitch, boolean distanceDelay) {
         if (!world.isClientSide()) {
-            PacketCustom packet = new PacketCustom(CHANNEL, C_PLAY_SOUND);
+            PacketCustom packet = new PacketCustom(CHANNEL, C_PLAY_SOUND, world.registryAccess());
             packet.writePos(pos);
-            packet.writeRegistryId(ForgeRegistries.SOUND_EVENTS, sound);
+            packet.writeRegistryId(BuiltInRegistries.SOUND_EVENT, sound);
             packet.writeVarInt(category.ordinal());
             packet.writeFloat(volume);
             packet.writeFloat(pitch);
             packet.writeBoolean(distanceDelay);
-            packet.sendToChunk(world, pos);
+            packet.sendToChunk((net.minecraft.server.level.ServerLevel) world, pos);
         }
     }
 
     public static void sendParticle(Level world, ParticleOptions particleData, Vector3 pos, Vector3 motion, boolean distanceOverride) {
         if (!world.isClientSide()) {
-            PacketCustom packet = new PacketCustom(CHANNEL, C_SPAWN_PARTICLE);
-            packet.writeRegistryId(ForgeRegistries.PARTICLE_TYPES, particleData.getType());
-            particleData.writeToNetwork(packet.toPacketBuffer());
+            PacketCustom packet = new PacketCustom(CHANNEL, C_SPAWN_PARTICLE, world.registryAccess());
+            packet.writeWithRegistryCodec(net.minecraft.core.particles.ParticleTypes.STREAM_CODEC, particleData);
             packet.writeVector(pos);
             packet.writeVector(motion);
             packet.writeBoolean(distanceOverride);
-            packet.sendToChunk(world, pos.pos());
+            packet.sendToChunk((net.minecraft.server.level.ServerLevel) world, pos.pos());
         }
     }
 
@@ -134,11 +131,11 @@ public class BCoreNetwork {
      * This is a custom entity spawn packet that removes the min/max velocity constraints.
      *
      * @param entity The entity being spawned.
-     * @return A packet to return in {@link Entity#getAddEntityPacket()}
+     * @return A packet to return in {@code Entity#getAddEntityPacket()}
      */
     public static Packet<?> getEntitySpawnPacket(Entity entity) {
-        PacketCustom packet = new PacketCustom(CHANNEL, C_SPAWN_ENTITY);
-        packet.writeRegistryId(ForgeRegistries.ENTITY_TYPES, entity.getType());
+        PacketCustom packet = new PacketCustom(CHANNEL, C_SPAWN_ENTITY, entity.registryAccess());
+        packet.writeRegistryId(BuiltInRegistries.ENTITY_TYPE, entity.getType());
         packet.writeInt(entity.getId());
         packet.writeUUID(entity.getUUID());
         packet.writeDouble(entity.getX());
@@ -151,11 +148,11 @@ public class BCoreNetwork {
         packet.writeFloat((float) velocity.x);
         packet.writeFloat((float) velocity.y);
         packet.writeFloat((float) velocity.z);
-        return packet.toPacket(NetworkDirection.PLAY_TO_CLIENT);
+        return packet.toClientPacket();
     }
 
     public static Packet<?> sendEntityVelocity(Entity entity, boolean movement) {
-        PacketCustom packet = new PacketCustom(CHANNEL, C_ENTITY_VELOCITY);
+        PacketCustom packet = new PacketCustom(CHANNEL, C_ENTITY_VELOCITY, entity.registryAccess());
         packet.writeInt(entity.getId());
         packet.writeVec3f(entity.getDeltaMovement().toVector3f());
         packet.writeBoolean(movement);
@@ -164,15 +161,15 @@ public class BCoreNetwork {
             packet.writeFloat(entity.getYRot());
             packet.writeBoolean(entity.onGround());
         }
-        return packet.toPacket(NetworkDirection.PLAY_TO_CLIENT);
+        return packet.toClientPacket();
     }
 
     public static void sendOpenHudConfig(ServerPlayer player) {
-        new PacketCustom(CHANNEL, C_OPEN_HUD_CONFIG).sendToPlayer(player);
+        new PacketCustom(CHANNEL, C_OPEN_HUD_CONFIG, player.registryAccess()).sendToPlayer(player);
     }
 
-    public static void sendMultiBlockDefinitions(ServerPlayer player, Map<ResourceLocation, MultiBlockDefinition> multiBlockMap) {
-        PacketCustom packet = new PacketCustom(CHANNEL, C_MULTI_BLOCK_DEFINITIONS);
+    public static void sendMultiBlockDefinitions(ServerPlayer player, Map<Identifier, MultiBlockDefinition> multiBlockMap) {
+        PacketCustom packet = new PacketCustom(CHANNEL, C_MULTI_BLOCK_DEFINITIONS, player.registryAccess());
         packet.writeVarInt(multiBlockMap.size());
         multiBlockMap.forEach((key, value) -> {
             packet.writeResourceLocation(key);
@@ -182,7 +179,7 @@ public class BCoreNetwork {
     }
 
     public static void sendContributorConfigToServer(ContributorProperties props) {
-        PacketCustom packet = new PacketCustom(CHANNEL, S_CONTRIBUTOR_CONFIG);
+        PacketCustom packet = new PacketCustom(CHANNEL, S_CONTRIBUTOR_CONFIG, null);
         if (props.isContributor()) {
             props.getConfig().serialize(packet);
             packet.sendToServer();
@@ -191,33 +188,31 @@ public class BCoreNetwork {
     }
 
     public static PacketCustom contributorConfigToClient(ContributorProperties props) {
-        PacketCustom packet = new PacketCustom(CHANNEL, C_CONTRIBUTOR_CONFIG);
+        PacketCustom packet = new PacketCustom(CHANNEL, C_CONTRIBUTOR_CONFIG, null);
         packet.writeUUID(props.getUserID());
         props.getConfig().serialize(packet);
         return packet;
     }
 
     public static void sendContribLinkToServer() {
-        new PacketCustom(CHANNEL, S_CONTRIBUTOR_LINK).sendToServer();
+        new PacketCustom(CHANNEL, S_CONTRIBUTOR_LINK, null).sendToServer();
     }
 
     public static void sentToAllExcept(PacketCustom packet, Player exclude) {
-        for (ServerPlayer player : ServerUtils.getPlayers()) {
+        for (ServerPlayer player : net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayers()) {
             if (!player.getUUID().equals(exclude.getUUID())) {
                 packet.sendToPlayer(player);
             }
         }
     }
 
-    public static void init() {
+    public static void init(net.neoforged.bus.api.IEventBus modBus) {
         LOCK.lock();
-
-        netChannel = PacketCustomChannelBuilder.named(CHANNEL)
-                .networkProtocolVersion(() -> "1")
-                .clientAcceptedVersions(e -> true)
-                .serverAcceptedVersions(e -> true)
-                .assignClientHandler(() -> ClientPacketHandler::new)
-                .assignServerHandler(() -> ServerPacketHandler::new)
-                .build();
+        netChannel = new PacketCustomChannel(CHANNEL)
+                .versioned("1")
+                .optional()
+                .client(() -> ClientPacketHandler::new)
+                .server(() -> ServerPacketHandler::new);
+        netChannel.init(modBus);
     }
 }

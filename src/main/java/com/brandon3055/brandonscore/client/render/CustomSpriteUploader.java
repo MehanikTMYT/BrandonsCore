@@ -19,10 +19,10 @@
 // */
 //public class CustomSpriteUploader extends TextureAtlasHolder {
 //    private final String prefix;
-//    private final Map<ResourceLocation, Consumer<TextureAtlasSprite>> registeredSprites;
+//    private final Map<Identifier, Consumer<TextureAtlasSprite>> registeredSprites;
 //    private Runnable reloadListener = null;
 //
-//    public CustomSpriteUploader(Map<ResourceLocation, Consumer<TextureAtlasSprite>> registeredSprites, ResourceLocation atlasLocation, String prefix) {
+//    public CustomSpriteUploader(Map<Identifier, Consumer<TextureAtlasSprite>> registeredSprites, Identifier atlasLocation, String prefix) {
 //        super(Minecraft.getInstance().textureManager, atlasLocation, prefix);
 //        this.prefix = prefix;
 //        this.registeredSprites = registeredSprites;
@@ -30,26 +30,26 @@
 //        resourceManager.registerReloadListener(this);
 //    }
 //
-//    public CustomSpriteUploader(Map<ResourceLocation, Consumer<TextureAtlasSprite>> registeredSprites, ResourceLocation atlasLocation) {
+//    public CustomSpriteUploader(Map<Identifier, Consumer<TextureAtlasSprite>> registeredSprites, Identifier atlasLocation) {
 //        this(registeredSprites, atlasLocation, null);
 //    }
 //
 //    @Override
-//    protected Stream<ResourceLocation> getResourcesToLoad() {
+//    protected Stream<Identifier> getResourcesToLoad() {
 //        return registeredSprites.keySet().stream();
 //    }
 //
 //    @Override
-//    public ResourceLocation resolveLocation(ResourceLocation location) {
+//    public Identifier resolveLocation(Identifier location) {
 //        if (prefix != null) {
-//            return new ResourceLocation(location.getNamespace(), this.prefix + "/" + location.getPath());
+//            return Identifier.fromNamespaceAndPath(location.getNamespace(), this.prefix + "/" + location.getPath());
 //        }
 //
 //        return location;
 //    }
 //
 //    @Override
-//    public TextureAtlasSprite getSprite(ResourceLocation locationIn) {
+//    public TextureAtlasSprite getSprite(Identifier locationIn) {
 //        return super.getSprite(locationIn);
 //    }
 //

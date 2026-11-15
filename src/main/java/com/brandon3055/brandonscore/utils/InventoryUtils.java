@@ -27,7 +27,7 @@ public class InventoryUtils {
             ItemStack s = inventory.getItem(i);
 
             //TODO Do i still need to check damage?
-            if (ItemStack.isSameItemSameTags(stack, s) && stack.getDamageValue() == s.getDamageValue() && s.getCount() >= stack.getCount()) {
+            if (ItemStack.isSameItemSameComponents(stack, s) && stack.getDamageValue() == s.getDamageValue() && s.getCount() >= stack.getCount()) {
                 return true;
             }
         }
@@ -47,7 +47,7 @@ public class InventoryUtils {
             }
 
             //TODO Do i still need to check damage?
-            if (ItemStack.isSameItemSameTags(stack, s) && stack.getDamageValue() == s.getDamageValue() && s.getCount() >= stack.getCount()) {
+            if (ItemStack.isSameItemSameComponents(stack, s) && stack.getDamageValue() == s.getDamageValue() && s.getCount() >= stack.getCount()) {
                 s.shrink(stack.getCount());
                 inventory.setChanged();
                 return true;
@@ -141,7 +141,7 @@ public class InventoryUtils {
 
     public static void dropItemNoDelay(ItemStack stack, Level world, Vector3 dropLocation) {
         ItemEntity item = new ItemEntity(world, dropLocation.x, dropLocation.y, dropLocation.z, stack);
-        item.setDeltaMovement(world.random.nextGaussian() * 0.05, world.random.nextGaussian() * 0.05 + 0.2F, world.random.nextGaussian() * 0.05);
+        item.setDeltaMovement(world.getRandom().nextGaussian() * 0.05, world.getRandom().nextGaussian() * 0.05 + 0.2F, world.getRandom().nextGaussian() * 0.05);
         world.addFreshEntity(item);
         item.setNoPickUpDelay();
     }

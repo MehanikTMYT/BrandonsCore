@@ -4,9 +4,9 @@ import com.brandon3055.brandonscore.BCConfig;
 import com.mojang.brigadier.CommandDispatcher;
 import net.covers1624.quack.util.CrashLock;
 import net.minecraft.commands.CommandSourceStack;
-import net.neoforged.client.event.RegisterClientCommandsEvent;
-import net.neoforged.neoforge.common.MinecraftForge;
-import net.neoforged.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 
 /**
  * Created by brandon3055 on 15/11/2022

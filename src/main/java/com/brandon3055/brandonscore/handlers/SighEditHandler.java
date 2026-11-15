@@ -3,12 +3,14 @@ package com.brandon3055.brandonscore.handlers;
 import com.brandon3055.brandonscore.BrandonsCore;
 import net.covers1624.quack.util.CrashLock;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
+import net.minecraft.world.level.gamerules.GameRule;
+import net.minecraft.world.level.gamerules.GameRuleCategory;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
-import net.neoforged.neoforge.common.MinecraftForge;
-import net.neoforged.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.bus.api.EventPriority;
 
 /**
@@ -17,10 +19,19 @@ import net.neoforged.bus.api.EventPriority;
 public class SighEditHandler {
 
     private static final CrashLock LOCK = new CrashLock("Already Initialized");
-    private static final GameRules.Key<GameRules.BooleanValue> ALLOW_SIGN_EDIT = GameRules.register(BrandonsCore.MODID + ":allowSignEditing", GameRules.Category.MISC, GameRules.BooleanValue.create(false, (server, newValue) -> {}));
+    private static final GameRule<Boolean> ALLOW_SIGN_EDIT = new GameRule<>(GameRuleCategory.MISC,
+            net.minecraft.world.level.gamerules.GameRuleType.BOOL,
+            com.mojang.brigadier.arguments.BoolArgumentType.bool(),
+            net.minecraft.world.level.gamerules.GameRuleTypeVisitor::visitBoolean,
+            com.mojang.serialization.Codec.BOOL, value -> value ? 1 : 0, false,
+            net.minecraft.world.flag.FeatureFlagSet.of());
 
-    public static void init() {
+    public static void init(net.neoforged.bus.api.IEventBus modBus) {
         LOCK.lock();
+        modBus.addListener((net.neoforged.neoforge.registries.RegisterEvent event) ->
+                event.register(net.minecraft.core.registries.Registries.GAME_RULE,
+                        net.minecraft.resources.Identifier.fromNamespaceAndPath(BrandonsCore.MODID, "allow_sign_editing"),
+                        () -> ALLOW_SIGN_EDIT));
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(EventPriority.LOW, SighEditHandler::onBlockInteract);
     }
 
@@ -31,7 +42,7 @@ public class SighEditHandler {
         }
 
         Player player = event.getEntity();
-        if (!player.isShiftKeyDown() || !player.getAbilities().mayBuild || !level.getGameRules().getBoolean(ALLOW_SIGN_EDIT) || !player.getItemInHand(event.getHand()).isEmpty()) {
+        if (!player.isShiftKeyDown() || !player.getAbilities().mayBuild || !((net.minecraft.server.level.ServerLevel) level).getGameRules().get(ALLOW_SIGN_EDIT) || !player.getItemInHand(event.getHand()).isEmpty()) {
             return;
         }
 

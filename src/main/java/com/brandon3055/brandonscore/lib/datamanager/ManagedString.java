@@ -91,7 +91,7 @@ public class ManagedString extends AbstractManagedData<String> {
 
     @Override
     public void fromNBT(CompoundTag compound) {
-        value = compound.getString(name);
+        value = compound.getStringOr(name, "");
         notifyListeners(value);
     }
 

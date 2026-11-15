@@ -66,20 +66,20 @@ public class FilterPlayer extends FilterBase {
 
     private boolean isPlayerMatch(Player player) {
         if (!(player instanceof ServerPlayer)) {
-            return player.getGameProfile().getName().equalsIgnoreCase(playerName);
+            return player.getGameProfile().name().equalsIgnoreCase(playerName);
         }
         else if (!playerUUID.isEmpty()) {
             return player.getUUID().toString().equals(playerUUID);
         }
-        MinecraftServer server = player.getServer();
+        MinecraftServer server = ((ServerPlayer) player).level().getServer();
         if (server != null){
-            GameProfile profile = server.getProfileCache().get(playerName).orElse(null);
+            net.minecraft.server.players.NameAndId profile = server.services().nameToIdCache().get(playerName).orElse(null);
             if (profile != null) {
-                playerUUID = profile.getId().toString();
+                playerUUID = profile.id().toString();
                 return player.getUUID().toString().equals(playerUUID);
             }
         }
-        return player.getGameProfile().getName().equalsIgnoreCase(playerName);
+        return player.getGameProfile().name().equalsIgnoreCase(playerName);
     }
 
     @Override
@@ -87,21 +87,19 @@ public class FilterPlayer extends FilterBase {
         return FilterType.PLAYER;
     }
 
-    @Override
-    public CompoundTag serializeNBT() {
-        CompoundTag compound = super.serializeNBT();
+    public CompoundTag serializeNBT(net.minecraft.core.HolderLookup.Provider registries) {
+        CompoundTag compound = super.serializeNBT(registries);
         compound.putBoolean("include", whitelistPlayers);
         compound.putString("name", playerName);
         compound.putString("uuid", playerUUID);
         return compound;
     }
 
-    @Override
-    public void deserializeNBT(CompoundTag nbt) {
-        super.deserializeNBT(nbt);
-        whitelistPlayers = nbt.getBoolean("include");
-        playerName = nbt.getString("name");
-        playerUUID = nbt.getString("uuid");
+    public void deserializeNBT(net.minecraft.core.HolderLookup.Provider registries, CompoundTag nbt) {
+        super.deserializeNBT(registries, nbt);
+        whitelistPlayers = nbt.getBooleanOr("include", false);
+        playerName = nbt.getStringOr("name", "");
+        playerUUID = nbt.getStringOr("uuid", "");
     }
 
     @Override

@@ -2,10 +2,10 @@ package com.brandon3055.brandonscore.handlers;
 
 import net.covers1624.quack.util.CrashLock;
 import net.minecraft.world.entity.player.Player;
-import net.neoforged.neoforge.common.MinecraftForge;
-import net.neoforged.event.entity.living.LivingEvent;
-import net.neoforged.event.entity.living.LivingEvent.LivingTickEvent;
-import net.neoforged.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.living.LivingEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 
 import java.util.*;
 
@@ -28,7 +28,7 @@ public class BCEventHandler {
         noClipPlayers.remove(event.getEntity().getUUID());
     }
 
-    public static void livingUpdate(LivingTickEvent event) {
+    public static void livingUpdate(PlayerTickEvent.Pre event) {
         if (event.getEntity() instanceof Player && noClipPlayers.contains(event.getEntity().getUUID())) {
             event.getEntity().noPhysics = true;
             ((Player) event.getEntity()).getAbilities().flying = true;

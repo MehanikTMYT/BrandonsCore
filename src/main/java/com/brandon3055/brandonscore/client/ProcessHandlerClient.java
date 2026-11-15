@@ -3,9 +3,9 @@ package com.brandon3055.brandonscore.client;
 import com.brandon3055.brandonscore.handlers.IProcess;
 import com.brandon3055.brandonscore.utils.BCProfiler;
 import net.covers1624.quack.util.CrashLock;
-import net.neoforged.neoforge.common.MinecraftForge;
-import net.neoforged.event.TickEvent;
-import net.neoforged.event.level.LevelEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 
 import java.util.ArrayList;
@@ -18,7 +18,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * This is a class used to run processes that implement IProcess.
  * Processes are similar to tile entities except that they are not bound to anything and they are not currently
  * persistent (they will be deleted when the world closes)
- * <p/>
+ * <p>
  * Created by brandon3055 on 12/8/2015.
  */
 
@@ -37,8 +37,8 @@ public class ProcessHandlerClient {
     }
 
     @SubscribeEvent
-    public void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase == TickEvent.Phase.START) {
+    public void onClientTick(ClientTickEvent.Pre event) {
+        {
             BCProfiler.TICK.start("process_handler");
             while (!syncTasks.isEmpty()) {
                 syncTasks.poll().run();

@@ -4,7 +4,7 @@ import codechicken.lib.packet.PacketCustom;
 import com.brandon3055.brandonscore.handlers.contributor.ContributorConfig.WingElytraCompat;
 import com.brandon3055.brandonscore.network.BCoreNetwork;
 import net.covers1624.quack.util.CrashLock;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
@@ -12,9 +12,9 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.neoforged.neoforge.common.MinecraftForge;
-import net.neoforged.event.TickEvent;
-import net.neoforged.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -63,8 +63,7 @@ public class ContributorHandler {
         }
     }
 
-    private static void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.START) return;
+    private static void onClientTick(ClientTickEvent.Pre event) {
         CONTRIBUTOR_MAP.values().forEach(ContributorProperties::clientTick);
     }
 
@@ -87,7 +86,7 @@ public class ContributorHandler {
      * @see #getProps(UUID, String)
      */
     public static ContributorProperties getProps(Player player) {
-        return getProps(player.getUUID(), player.getGameProfile().getName());
+        return getProps(player.getUUID(), player.getGameProfile().name());
     }
 
     /**
@@ -119,7 +118,7 @@ public class ContributorHandler {
         ContributorConfig newConfig = ContributorConfig.deSerialize(packet);
         getPropsCallback(sender, props -> {
             //Fixes some bugyness in the config gui when playing in single-player
-            if (sender.server.isDedicatedServer() || !sender.server.isSingleplayerOwner(sender.getGameProfile())) {
+            if (sender.level().getServer().isDedicatedServer() || !sender.level().getServer().isSingleplayerOwner(new net.minecraft.server.players.NameAndId(sender.getGameProfile()))) {
                 props.setConfig(newConfig);
 //                BrandonsCore.LOGGER.info("handleSettingsFromClient: Accepted Client Settings: " + sender);
             }
@@ -160,7 +159,7 @@ public class ContributorHandler {
 
     public static void handleClientLink(ServerPlayer sender) {
 //        BrandonsCore.LOGGER.info("handleClientLink: Client Link Received");
-        if (sender.server.isDedicatedServer() && !FETCHER.hasUser(sender.getUUID()) && System.currentTimeMillis() - lastClientReload > 60000) {
+        if (sender.level().getServer().isDedicatedServer() && !FETCHER.hasUser(sender.getUUID()) && System.currentTimeMillis() - lastClientReload > 60000) {
             reload();
             lastClientReload = System.currentTimeMillis();
 //            BrandonsCore.LOGGER.info("handleClientLink: Client Link Accepted!");
@@ -185,8 +184,8 @@ public class ContributorHandler {
 
         MutableComponent configCommand = Component.literal("/bcore_client contributor").withStyle(BLUE);
         configCommand.setStyle(configCommand.getStyle()
-                .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/bcore_client contributor"))
-                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Click to run command"))));
+                .withClickEvent(new ClickEvent.SuggestCommand("/bcore_client contributor"))
+                .withHoverEvent(new HoverEvent.ShowText(Component.literal("Click to run command"))));
         player.sendSystemMessage(Component.literal("Run ")
                 .append(configCommand)
                 .append(Component.literal(" to access contributor settings.")));

@@ -92,7 +92,7 @@ public class TargetPos {
         return "X: " + (int) Math.floor(pos.x) +
                 ", Y: " + (int) Math.floor(pos.y) +
                 ", Z: " + (int) Math.floor(pos.z) +
-                ", " + (fullDim ? dimension.location() : dimension.location().getPath());
+                ", " + (fullDim ? dimension.identifier() : dimension.identifier().getPath());
     }
 
     public TargetPos setIncludeHeading(boolean includeHeading) {
@@ -137,7 +137,7 @@ public class TargetPos {
 
     public CompoundTag writeToNBT(CompoundTag nbt) {
         pos.writeToNBT(nbt);
-        nbt.putString("dim", dimension.location().toString());
+        nbt.putString("dim", dimension.identifier().toString());
         nbt.putBoolean("heading", includeHeading);
         if (includeHeading) {
             nbt.putFloat("pitch", pitch);
@@ -152,17 +152,17 @@ public class TargetPos {
 
     public void readFromNBT(CompoundTag nbt) {
         pos = Vector3.fromNBT(nbt);
-        dimension = ResourceKey.create(Registries.DIMENSION, new ResourceLocation(nbt.getString("dim")));
-        includeHeading = nbt.getBoolean("heading");
+        dimension = ResourceKey.create(Registries.DIMENSION, Identifier.parse(nbt.getStringOr("dim", "minecraft:overworld")));
+        includeHeading = nbt.getBooleanOr("heading", false);
         if (includeHeading) {
-            pitch = nbt.getFloat("pitch");
-            yaw = nbt.getFloat("yaw");
+            pitch = nbt.getFloatOr("pitch", 0);
+            yaw = nbt.getFloatOr("yaw", 0);
         }
     }
 
     public void write(MCDataOutput output) {
         output.writeVector(pos);
-        output.writeResourceLocation(dimension.location());
+        output.writeResourceLocation(dimension.identifier());
         output.writeBoolean(includeHeading);
         if (includeHeading) {
             output.writeFloat(pitch);

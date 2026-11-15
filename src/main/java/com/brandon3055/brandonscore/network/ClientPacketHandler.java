@@ -22,7 +22,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import org.joml.Vector3f;
 
 import java.util.UUID;
@@ -30,7 +30,7 @@ import java.util.UUID;
 public class ClientPacketHandler implements ICustomPacketHandler.IClientPacketHandler {
 
     @Override
-    public void handlePacket(PacketCustom packet, Minecraft mc, ClientPacketListener handler) {
+    public void handlePacket(PacketCustom packet, Minecraft mc) {
         switch (packet.getType()) {
             case BCoreNetwork.C_TILE_DATA_MANAGER -> {
                 BlockPos pos = packet.readPos();
@@ -94,7 +94,7 @@ public class ClientPacketHandler implements ICustomPacketHandler.IClientPacketHa
             return;
         }
 
-        EntityType<?> type = packet.readRegistryId();//ForgeRegistries.ENTITY_TYPES.byId(packet.readVarInt());
+        EntityType<?> type = packet.readRegistryId();//BuiltInRegistries.ENTITY_TYPE.byId(packet.readVarInt());
         int entityID = packet.readInt();
         UUID uuid = packet.readUUID();
         double posX = packet.readDouble();
@@ -104,19 +104,19 @@ public class ClientPacketHandler implements ICustomPacketHandler.IClientPacketHa
         byte pitch = packet.readByte();
         byte headYaw = packet.readByte();
         Vec3 velocity = new Vec3(packet.readFloat(), packet.readFloat(), packet.readFloat());
-        Entity entity = type.create(mc.level);
+        Entity entity = type.create(mc.level, net.minecraft.world.entity.EntitySpawnReason.LOAD);
         if (entity == null) {
             return;
         }
 
         entity.setPosRaw(posX, posY, posZ);
-        entity.absMoveTo(posX, posY, posZ, (pitch * 360) / 256.0F, (yaw * 360) / 256.0F);
+        entity.snapTo(posX, posY, posZ, (pitch * 360) / 256.0F, (yaw * 360) / 256.0F);
         entity.setYHeadRot((headYaw * 360) / 256.0F);
         entity.setYBodyRot((headYaw * 360) / 256.0F);
         entity.setId(entityID);
         entity.setUUID(uuid);
-        mc.level.putNonPlayerEntity(entityID, entity);
-        entity.lerpMotion(velocity.x, velocity.y, velocity.z);
+        mc.level.addEntity(entity);
+        entity.lerpMotion(velocity);
     }
 
     private static void handleEntityVelocity(PacketCustom packet, Minecraft mc) {
@@ -127,7 +127,7 @@ public class ClientPacketHandler implements ICustomPacketHandler.IClientPacketHa
         Entity entity = mc.level.getEntity(entityID);
         if (entity != null) {
             Vector3f motion = packet.readVec3f();
-            entity.lerpMotion(motion.x(), motion.y(), motion.z());
+            entity.lerpMotion(new Vec3(motion));
             if (packet.readBoolean()) {
                 entity.setXRot(packet.readFloat());
                 entity.setYRot(packet.readFloat());
@@ -140,12 +140,11 @@ public class ClientPacketHandler implements ICustomPacketHandler.IClientPacketHa
         if (mc.level == null) {
             return;
         }
-        ParticleType<?> type = packet.readRegistryId();
-        ParticleOptions data = type.getDeserializer().fromNetwork(SneakyUtils.unsafeCast(type), packet.toPacketBuffer());
+        ParticleOptions data = packet.readWithRegistryCodec(net.minecraft.core.particles.ParticleTypes.STREAM_CODEC);
         Vector3 pos = packet.readVector();
         Vector3 motion = packet.readVector();
         boolean distanceOverride = packet.readBoolean();
         ;
-        mc.level.addParticle(data, distanceOverride, pos.x, pos.y, pos.z, motion.x, motion.y, motion.z);
+        mc.level.addParticle(data, distanceOverride, false, pos.x, pos.y, pos.z, motion.x, motion.y, motion.z);
     }
 }

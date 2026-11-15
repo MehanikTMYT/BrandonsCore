@@ -17,17 +17,17 @@ import net.minecraft.world.phys.Vec3;
  * Im just going to add it so when i remember the thing it is here!
  */
 @Deprecated //I dont need this anymore
-public class BCParticle extends Particle {
+public class BCParticle extends net.minecraft.client.particle.SingleQuadParticle {
     protected float texturesPerRow = 16F;
     protected float airResistance = 0;
     protected float baseScale = 1;
 
     public BCParticle(ClientLevel worldIn, Vec3 pos) {
-        super(worldIn, pos.x, pos.y, pos.z);
+        super(worldIn, pos.x, pos.y, pos.z, defaultSprite());
     }
 
     public BCParticle(ClientLevel worldIn, Vec3 pos, Vec3 speed) {
-        super(worldIn, pos.x, pos.y, pos.z, speed.x, speed.y, speed.z);
+        super(worldIn, pos.x, pos.y, pos.z, speed.x, speed.y, speed.z, defaultSprite());
     }
 
 //    /**
@@ -65,7 +65,7 @@ public class BCParticle extends Particle {
     }
 
     public BCParticle setMaxAge(int age, int randAdditive) {
-        super.setLifetime(age + random.nextInt(randAdditive));
+        super.setLifetime(age + (randAdditive > 0 ? random.nextInt(randAdditive) : 0));
         return this;
     }
 
@@ -110,25 +110,47 @@ public class BCParticle extends Particle {
         this.setLocationFromBoundingbox();
     }
 
-    @Override
-    public void render(VertexConsumer buffer, Camera renderInfo, float partialTicks) {
+    private static net.minecraft.client.renderer.texture.TextureAtlasSprite defaultSprite() {
+        return net.minecraft.client.Minecraft.getInstance().getAtlasManager().get(
+            new net.minecraft.client.resources.model.sprite.SpriteId(
+                net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_PARTICLES,
+                net.minecraft.resources.Identifier.withDefaultNamespace("generic_0")));
+    }
 
+    public BCParticle withSprite(net.minecraft.client.renderer.texture.TextureAtlasSprite sprite) {
+        setSprite(sprite);
+        return this;
     }
 
     @Override
-    public ParticleRenderType getRenderType() {
-        return null;
+    protected Layer getLayer() { return Layer.bySprite(sprite); }
+
+    @Override
+    public float getQuadSize(float partialTick) { return super.getQuadSize(partialTick) * baseScale; }
+
+    @Override
+    public void tick() {
+        super.tick();
+        double drag = Math.max(0, 1 - airResistance);
+        xd *= drag; yd *= drag; zd *= drag;
     }
 
-    private static IGLFXHandler DEFAULT_FX_HANDLER = new IGLFXHandler() {
-        @Override
-        public void preDraw(int layer, BufferBuilder vertexbuffer, Entity entityIn, float partialTicks, float rotationX, float rotationZ, float rotationYZ, float rotationXY, float rotationXZ) {
-
+    @Override
+    public void extract(net.minecraft.client.renderer.state.level.QuadParticleRenderState state, Camera camera, float partialTick) {
+        if (isRawGLParticle()) {
+            throw new UnsupportedOperationException("MC26 raw GL particles must override extract with their RenderPipeline/particle-group state");
         }
+        super.extract(state, camera, partialTick);
+    }
 
+    private static final IGLFXHandler DEFAULT_FX_HANDLER = new IGLFXHandler() {
         @Override
-        public void postDraw(int layer, BufferBuilder vertexbuffer, Tesselator tessellator) {
-
+        public void preDraw(int layer, BufferBuilder buffer, Entity entity, float partialTick, float x, float z, float yz, float xy, float xz) {
+            throw new UnsupportedOperationException("Use MC26 particle extraction, not immediate GL preDraw");
+        }
+        @Override
+        public void postDraw(int layer, BufferBuilder buffer, Tesselator tessellator) {
+            throw new UnsupportedOperationException("Use MC26 particle-group submission, not immediate GL postDraw");
         }
     };
 }

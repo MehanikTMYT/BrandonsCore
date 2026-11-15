@@ -14,10 +14,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.common.MinecraftForge;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.common.util.FakePlayerFactory;
-import net.neoforged.event.entity.EntityJoinLevelEvent;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 
@@ -63,7 +63,7 @@ public class BlockToStackHelper {
         itemCollection = new ArrayList<>();
 
         BlockEntity tile = world.getBlockEntity(pos);
-        if (state.onDestroyedByPlayer(world, pos, player, true, world.getFluidState(pos))){
+        if (state.onDestroyedByPlayer(world, pos, player, player.getMainHandItem(), true, world.getFluidState(pos))){
             block.destroy(world, pos, state);
             block.playerDestroy(world, player, pos, state, tile, player.getMainHandItem());
         }

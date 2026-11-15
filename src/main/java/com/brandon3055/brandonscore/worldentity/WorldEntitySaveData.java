@@ -14,6 +14,14 @@ import java.util.List;
  */
 public class WorldEntitySaveData extends SavedData {
     public static final String FILE_ID = "brandonscore_world_entity";
+    public static final net.minecraft.world.level.saveddata.SavedDataType<WorldEntitySaveData> TYPE =
+            new net.minecraft.world.level.saveddata.SavedDataType<>(
+                    net.minecraft.resources.Identifier.fromNamespaceAndPath("brandonscore", FILE_ID),
+                    WorldEntitySaveData::new,
+                    CompoundTag.CODEC.xmap(WorldEntitySaveData::load, data -> {
+                        if (data.saveCallback != null) data.saveCallback.run();
+                        return data.save(new CompoundTag());
+                    }));
     private List<WorldEntity> entities = new ArrayList<>();
     private Runnable saveCallback;
 
@@ -34,14 +42,16 @@ public class WorldEntitySaveData extends SavedData {
 
     public static WorldEntitySaveData load(CompoundTag nbt) {
         WorldEntitySaveData data = new WorldEntitySaveData();
-        ListTag list = nbt.getList("entities", 10);
+        ListTag list = nbt.getListOrEmpty("entities");
         for (Tag inbt : list) {
-            data.entities.add(WorldEntity.readWorldEntity((CompoundTag) inbt));
+            if (inbt instanceof CompoundTag tag) {
+                WorldEntity entity = WorldEntity.readWorldEntity(tag);
+                if (entity != null) data.entities.add(entity);
+            }
         }
         return data;
     }
 
-    @Override
     public CompoundTag save(CompoundTag compound) {
         ListTag list = new ListTag();
         for (WorldEntity entity : entities) {
@@ -54,9 +64,8 @@ public class WorldEntitySaveData extends SavedData {
     }
 
     @Override
-    public void save(File fileIn) {
-        setDirty(true);
-        saveCallback.run();
-        super.save(fileIn);
+    public boolean isDirty() {
+        // World entities can mutate without notifying storage. Refresh at every world save.
+        return true;
     }
 }

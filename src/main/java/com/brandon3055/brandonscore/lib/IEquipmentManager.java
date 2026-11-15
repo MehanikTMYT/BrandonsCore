@@ -5,7 +5,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import com.brandon3055.brandonscore.lib.Optional;
+import java.util.Optional;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
 
 import java.util.List;
@@ -24,5 +24,5 @@ public interface IEquipmentManager {
 
     ItemStack findMatchingItem(Predicate<ItemStack> predicate, LivingEntity entity);
 
-    List<ResourceLocation> getSlotIcons(LivingEntity entity);
+    List<Identifier> getSlotIcons(LivingEntity entity);
 }

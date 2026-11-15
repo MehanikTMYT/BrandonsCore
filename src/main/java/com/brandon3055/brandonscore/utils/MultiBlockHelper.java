@@ -6,7 +6,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 /**
  * Created by brandon3055 on 1/4/2016.
@@ -23,12 +23,12 @@ public class MultiBlockHelper {
         } else if (name.equals("air")) {
             return state.isAir();
         } else {
-            return ForgeRegistries.BLOCKS.getKey(state.getBlock()).toString().equals(name);
+            return BuiltInRegistries.BLOCK.getKey(state.getBlock()).toString().equals(name);
         }
     }
 
     public void setBlock(String name, Level world, BlockPos pos) {
-        Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(name));
+        Block block = BuiltInRegistries.BLOCK.getValue(Identifier.parse(name));
         if (block != null) {
             world.setBlockAndUpdate(pos, block.defaultBlockState());
         } else {

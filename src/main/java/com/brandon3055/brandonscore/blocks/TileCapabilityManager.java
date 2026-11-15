@@ -10,11 +10,10 @@ import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
-import net.neoforged.neoforge.capabilities.Capability;
-import net.neoforged.neoforge.capabilities.ForgeCapabilities;
-import net.neoforged.neoforge.capabilities.ICapabilityProvider;
+import net.neoforged.neoforge.capabilities.BaseCapability;
+import com.brandon3055.brandonscore.capability.BCapabilityProvider;
 import com.brandon3055.brandonscore.lib.datamanager.BCSerializable;
-import com.brandon3055.brandonscore.lib.Optional;
+import java.util.Optional;
 import net.neoforged.neoforge.energy.EnergyStorage;
 
 import javax.annotation.Nonnull;
@@ -25,9 +24,9 @@ import java.util.function.Predicate;
 /**
  * Created by brandon3055 on 18/12/19.
  */
-public class TileCapabilityManager implements ICapabilityProvider {
+public class TileCapabilityManager implements BCapabilityProvider {
 
-    private Map<Capability<?>, Map<Direction, Optional<?>>> capabilityMap = new HashMap<>();
+    private Map<BaseCapability<?, ?>, Map<Direction, Optional<?>>> capabilityMap = new HashMap<>();
     private Map<Object, Predicate<Direction>> capSideValidator = new HashMap<>();
 
     private Map<BCSerializable<CompoundTag>, SerializationFlags<?>> serializableMap = new HashMap<>();
@@ -46,7 +45,7 @@ public class TileCapabilityManager implements ICapabilityProvider {
      * @param capInstance The capability instance.
      * @param sides       The sides to bind to. (Leave empty to bind to all sides including null)
      */
-    public <T> void set(@Nonnull Capability<?> cap, @Nonnull T capInstance, Direction... sides) {
+    public <T> void set(@Nonnull BaseCapability<?, ?> cap, @Nonnull T capInstance, Direction... sides) {
         if (sides == null) {
             return;
         }
@@ -72,7 +71,7 @@ public class TileCapabilityManager implements ICapabilityProvider {
      * @return The modifiable serialization flags. By default set to 'save to tile' and 'save to item'
      * @see #set(Capability, Object, Direction...)
      */
-    public <T extends BCSerializable<CompoundTag>> SerializationFlags<T> setManaged(String tagName, @Nonnull Capability<?> cap, @Nonnull T capInstance, Direction... sides) {
+    public <T extends BCSerializable<CompoundTag>> SerializationFlags<T> setManaged(String tagName, @Nonnull BaseCapability<?, ?> cap, @Nonnull T capInstance, Direction... sides) {
         set(cap, capInstance, sides);
         SerializationFlags<T> flags = new SerializationFlags<>(tagName, capInstance);
         serializableMap.put(capInstance, flags);
@@ -84,7 +83,7 @@ public class TileCapabilityManager implements ICapabilityProvider {
      * The same as setManaged except the capability will not be exposes at all via getCapability. Used in cases where you need a "private" internal capability
      * @see #setManaged(String, Capability, BCSerializable, Direction...)
      */
-    public <T extends BCSerializable<CompoundTag>> SerializationFlags<T> setInternalManaged(String tagName, @Nonnull Capability<?> cap, @Nonnull T capInstance) {
+    public <T extends BCSerializable<CompoundTag>> SerializationFlags<T> setInternalManaged(String tagName, @Nonnull BaseCapability<?, ?> cap, @Nonnull T capInstance) {
         SerializationFlags<T> flags = new SerializationFlags<>(tagName, capInstance);
         serializableMap.put(capInstance, flags);
         indexedDataList.add(flags);
@@ -97,7 +96,7 @@ public class TileCapabilityManager implements ICapabilityProvider {
      * @param cap   The capability type to remove.
      * @param sides The sides to remove from. (Leave empty to bind to all sides including null)
      */
-    public <T> void remove(@Nonnull Capability<T> cap, Direction... sides) {
+    public <T> void remove(@Nonnull BaseCapability<T, ?> cap, Direction... sides) {
         if (sides.length == 0) {
             sides = Direction.values();
             clearSide(cap, null);
@@ -116,14 +115,11 @@ public class TileCapabilityManager implements ICapabilityProvider {
      * @param capInstance The capability instance.
      * @param side        The side to bind to. (can be null)
      */
-    public <T> void setSide(@Nonnull Capability<?> cap, @Nonnull T capInstance, @Nullable Direction side) {
+    public <T> void setSide(@Nonnull BaseCapability<?, ?> cap, @Nonnull T capInstance, @Nullable Direction side) {
         Map<Direction, Optional<?>> map = capabilityMap.computeIfAbsent(cap, c -> new HashMap<>());
-        Optional<?> previous = map.get(side);
-        map.put(side, Optional.of(() -> capInstance));
+        map.put(side, Optional.of(capInstance));
 
-        if (previous != null) {
-            previous.invalidate();
-        }
+        tile.invalidateCapabilities();
     }
 
     /**
@@ -132,26 +128,20 @@ public class TileCapabilityManager implements ICapabilityProvider {
      * @param cap  The capability type to remove.
      * @param side The side to remove from. (can be null)
      */
-    public <T> void clearSide(@Nonnull Capability<?> cap, @Nullable Direction side) {
+    public <T> void clearSide(@Nonnull BaseCapability<?, ?> cap, @Nullable Direction side) {
         Map<Direction, Optional<?>> map = capabilityMap.get(cap);
         if (map != null) {
-            Optional<?> previous = map.get(side);
-            map.remove(side);
+                map.remove(side);
 
-            if (previous != null) {
-                previous.invalidate();
-            }
+            tile.invalidateCapabilities();
         }
     }
 
     @Nonnull
     @Override
     @SuppressWarnings("unchecked")
-    public <T> Optional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
+    public <T> Optional<T> getCapability(@Nonnull BaseCapability<T, ?> cap, @Nullable Direction side) {
         Map<Direction, Optional<?>> map = capabilityMap.get(cap);
-        if (map == null && cap == ForgeCapabilities.ENERGY) {
-            map = capabilityMap.get(CapabilityOP.OP);
-        }
 
         if (map != null && map.containsKey(side)) {
             Optional<T> optional = (Optional<T>) map.get(side);
@@ -165,7 +155,7 @@ public class TileCapabilityManager implements ICapabilityProvider {
 
     //Should be called by the tile's remove method to invalidate capabilities when the tile is removed.
     public void invalidate() {
-        capabilityMap.values().forEach(map -> map.values().forEach(Optional::invalidate));
+        tile.invalidateCapabilities();
     }
 
     /**
@@ -179,6 +169,7 @@ public class TileCapabilityManager implements ICapabilityProvider {
      */
     public void setCapSideValidator(Object capabilityInstance, Predicate<Direction> predicate) {
         capSideValidator.put(capabilityInstance, predicate);
+        tile.invalidateCapabilities();
     }
 
     //Serialization
@@ -197,7 +188,7 @@ public class TileCapabilityManager implements ICapabilityProvider {
     public void deserialize(CompoundTag compound) {
         for (SerializationFlags<?> helper : serializableMap.values()) {
             if (compound.contains(helper.tagName)) {
-                helper.getData().deserializeNBT(compound.getCompound(helper.tagName));
+                helper.getData().deserializeNBT(compound.getCompoundOrEmpty(helper.tagName));
             }
         }
     }
@@ -225,7 +216,7 @@ public class TileCapabilityManager implements ICapabilityProvider {
     }
 
     private PacketCustom createCapPacket(SerializationFlags<?> helper, int index) {
-        PacketCustom packet = new PacketCustom(BCoreNetwork.CHANNEL, BCoreNetwork.C_TILE_CAP_DATA);
+        PacketCustom packet = new PacketCustom(BCoreNetwork.CHANNEL, BCoreNetwork.C_TILE_CAP_DATA, tile.getLevel().registryAccess());
         packet.writePos(tile.getBlockPos());
         packet.writeInt(index);
         if (helper.getData() instanceof IMCDataSerializable) {

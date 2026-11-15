@@ -29,8 +29,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.client.event.RenderHighlightEvent;
+import net.neoforged.neoforge.client.event.ExtractBlockOutlineRenderStateEvent;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -70,11 +69,6 @@ public class BlockBCore extends Block implements IBCoreBlock {
     }
 
     @Override
-    public boolean isValidSpawn(BlockState state, BlockGetter level, BlockPos pos, SpawnPlacements.Type type, EntityType<?> entityType) {
-        return !blockSpawns && super.isValidSpawn(state, level, pos, type, entityType);
-    }
-
-    @Override
     public float getShadeBrightness(BlockState p_60472_, BlockGetter p_60473_, BlockPos p_60474_) {
         return isLightTransparent ? 1F : super.getShadeBrightness(p_60472_, p_60473_, p_60474_);
     }
@@ -84,24 +78,25 @@ public class BlockBCore extends Block implements IBCoreBlock {
      * */
     public BlockBCore dontSpawnOnMe() {
         this.blockSpawns = true;
+        properties.isValidSpawn((state, level, pos, entityType) -> false);
         return this;
     }
 
     @Override
-    public ItemStack getCloneItemStack(BlockState state, HitResult target, BlockGetter level, BlockPos pos, Player player) {
-        ItemStack stack = super.getCloneItemStack(state, target, level, pos, player);
+    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state, boolean includeData, Player player) {
+        ItemStack stack = super.getCloneItemStack(level, pos, state, includeData);
         BlockEntity tile = level.getBlockEntity(pos);
 
         if (tile instanceof IDataRetainingTile && !BrandonsCore.proxy.isCTRLKeyDown()) {
             CompoundTag tileData = new CompoundTag();
             ((IDataRetainingTile) tile).writeToItemStack(tileData, false);
             if (!tileData.isEmpty()) {
-                ItemNBTHelper.getCompound(stack).put(BC_TILE_DATA_TAG, tileData);
+                ItemNBTHelper.updateCompound(stack, tag -> tag.put(BC_TILE_DATA_TAG, tileData));
             }
         }
 
         if (tile instanceof Nameable && ((Nameable) tile).hasCustomName()) {
-            stack.setHoverName(((Nameable) tile).getName());
+            stack.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, ((Nameable) tile).getName());
         }
 
         return stack;
@@ -155,18 +150,18 @@ public class BlockBCore extends Block implements IBCoreBlock {
     }
 
     @Override
-    public void neighborChanged(BlockState state, Level world, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving) {
+    public void neighborChanged(BlockState state, Level world, BlockPos pos, Block blockIn, @Nullable net.minecraft.world.level.redstone.Orientation orientation, boolean isMoving) {
         if (this instanceof EntityBlockBCore) {
             BlockEntity tile = world.getBlockEntity(pos);
             if (tile instanceof IChangeListener) {
-                ((IChangeListener) tile).onNeighborChange(fromPos);
+                ((IChangeListener) tile).onNeighborChange(pos);
             }
         }
-        super.neighborChanged(state, world, pos, blockIn, fromPos, isMoving);
+        super.neighborChanged(state, world, pos, blockIn, orientation, isMoving);
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+    public InteractionResult useItemOn(ItemStack heldStack, BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if (this instanceof EntityBlockBCore) {
             BlockEntity tile = world.getBlockEntity(pos);
             if (tile instanceof IInteractTile) {
@@ -174,7 +169,14 @@ public class BlockBCore extends Block implements IBCoreBlock {
             }
         }
 
-        return super.use(state, world, pos, player, hand, hit);
+        return super.useItemOn(heldStack, state, world, pos, player, hand, hit);
+    }
+
+    @Override
+    protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
+        BlockEntity tile = world.getBlockEntity(pos);
+        if (tile instanceof IInteractTile interact) return interact.onBlockUse(state, player, InteractionHand.MAIN_HAND, hit);
+        return super.useWithoutItem(state, world, pos, player, hit);
     }
 
     @Override
@@ -193,12 +195,12 @@ public class BlockBCore extends Block implements IBCoreBlock {
         BlockEntity tile = world.getBlockEntity(pos);
 
         if (tile instanceof IDataRetainingTile) {
-            if (stack.hasTag() && stack.getTag().contains(BC_TILE_DATA_TAG)) {
-                ((IDataRetainingTile) tile).readFromItemStack(stack.getTagElement(BC_TILE_DATA_TAG));
+            if (stack.has(net.minecraft.core.component.DataComponents.CUSTOM_DATA) && com.brandon3055.brandonscore.utils.ItemNBTHelper.getCompound(stack).contains(BC_TILE_DATA_TAG)) {
+                ((IDataRetainingTile) tile).readFromItemStack(ItemNBTHelper.getCompound(stack).getCompoundOrEmpty(BC_TILE_DATA_TAG));
             }
         }
 
-        if (tile instanceof TileBCore && stack.hasCustomHoverName()) {
+        if (tile instanceof TileBCore && stack.has(net.minecraft.core.component.DataComponents.CUSTOM_NAME)) {
             ((TileBCore) tile).setCustomName(stack.getHoverName().getString());
         }
     }
@@ -212,7 +214,7 @@ public class BlockBCore extends Block implements IBCoreBlock {
             ((IDataRetainingTile) te).writeToItemStack(tileData, true);
             if (!tileData.isEmpty()) {
                 stack = new ItemStack(this, 1);//, damageDropped(state));
-                ItemNBTHelper.getCompound(stack).put(BC_TILE_DATA_TAG, tileData);
+                ItemNBTHelper.updateCompound(stack, tag -> tag.put(BC_TILE_DATA_TAG, tileData));
             }
         }
 
@@ -220,7 +222,7 @@ public class BlockBCore extends Block implements IBCoreBlock {
             if (stack == null) {
                 stack = new ItemStack(this, 1);
             }
-            stack.setHoverName(((Nameable) te).getName());
+            stack.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, ((Nameable) te).getName());
         }
 
         if (stack != null) {
@@ -244,7 +246,7 @@ public class BlockBCore extends Block implements IBCoreBlock {
     }
 
     @Override
-    public void onBlockExploded(BlockState state, Level world, BlockPos pos, Explosion explosion) {
+    public void onBlockExploded(BlockState state, net.minecraft.server.level.ServerLevel world, BlockPos pos, Explosion explosion) {
         if ((explosion.getIndirectSourceEntity() instanceof Mob && isMobResistant) || isExplosionResistant) {
             return;
         }
@@ -310,17 +312,13 @@ public class BlockBCore extends Block implements IBCoreBlock {
         }
     }
 
-    @OnlyIn(Dist.CLIENT)
-    @Override
-    public void appendHoverText(ItemStack stack, @Nullable BlockGetter worldIn, List<Component> tooltip, TooltipFlag flagIn) {
-        super.appendHoverText(stack, worldIn, tooltip, flagIn);
-        if (stack.hasTag() && stack.getTag().contains(BC_TILE_DATA_TAG)) {
+    public void appendHoverText(ItemStack stack, List<Component> tooltip) {
+        if (stack.has(net.minecraft.core.component.DataComponents.CUSTOM_DATA) && com.brandon3055.brandonscore.utils.ItemNBTHelper.getCompound(stack).contains(BC_TILE_DATA_TAG)) {
             tooltip.add(Component.translatable("info.brandonscore.block_has_saved_data"));
         }
     }
 
-    @OnlyIn(Dist.CLIENT)
-    public boolean renderSelectionBox(RenderHighlightEvent.Block event, Level level) {
+    public boolean renderSelectionBox(ExtractBlockOutlineRenderStateEvent event, Level level) {
         return true;
     }
 }

@@ -225,7 +225,7 @@
 //    @Override
 //    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
 //        if (isMouseOver(mouseX, mouseY)) {
-//            if (mouseButton == 0 && Screen.hasShiftDown()) {
+//            if (mouseButton == 0 && net.minecraft.client.Minecraft.getInstance().hasShiftDown()) {
 //                DLRSCache.clearFileCache(imageURL);
 //                loadingTime = 0;
 //                container.layoutMarkdownElements();

@@ -96,14 +96,14 @@ public class ManagedTextComponent extends AbstractManagedData<Component> {
     @Override
     public void toNBT(CompoundTag compound) {
         if (value != null) {
-            compound.putString(name, Component.Serializer.toJson(value));
+            compound.putString(name, net.minecraft.network.chat.ComponentSerialization.CODEC.encodeStart(com.mojang.serialization.JsonOps.INSTANCE, value).getOrThrow().toString());
         }
     }
 
     @Override
     public void fromNBT(CompoundTag compound) {
         if (compound.contains(name)) {
-            value = Component.Serializer.fromJson(compound.getString(name));
+            value = net.minecraft.network.chat.ComponentSerialization.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, com.google.gson.JsonParser.parseString(compound.getStringOr(name, ""))).getOrThrow();
         } else {
             value = null;
         }

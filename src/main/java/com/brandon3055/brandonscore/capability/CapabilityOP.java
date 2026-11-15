@@ -1,33 +1,35 @@
 package com.brandon3055.brandonscore.capability;
 
+import com.brandon3055.brandonscore.BrandonsCore;
 import com.brandon3055.brandonscore.api.power.IOPStorage;
-import net.covers1624.quack.util.CrashLock;
-import net.neoforged.neoforge.capabilities.Capability;
-import net.neoforged.neoforge.capabilities.CapabilityManager;
-import net.neoforged.neoforge.capabilities.CapabilityToken;
+import com.brandon3055.brandonscore.blocks.TileBCore;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.neoforged.neoforge.capabilities.BlockCapability;
+import net.neoforged.neoforge.capabilities.ItemCapability;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.neoforged.neoforge.transfer.access.ItemAccess;
 
-/**
- * Created by brandon3055 on 14/8/19.
- * <p>
- * Operational Potential is the power system used by Draconic Evolution and related mods.
- * This system is an extension of Forge Energy that allows long based power transfer and storage.
- */
-public class CapabilityOP {
-    private static final CrashLock LOCK = new CrashLock("Already Initialized.");
+/** Long-valued Operational Potential capabilities for 26.1.2. */
+public final class CapabilityOP {
+    private static final Identifier ID = Identifier.fromNamespaceAndPath(BrandonsCore.MODID, "op");
+    public static final BlockCapability<IOPStorage, Direction> OP = BlockCapability.createSided(ID, IOPStorage.class);
+    public static final ItemCapability<IOPStorage, ItemAccess> ITEM = ItemCapability.create(ID, IOPStorage.class, ItemAccess.class);
 
-    public static Capability<IOPStorage> OP = CapabilityManager.get(new CapabilityToken<>(){});
+    private CapabilityOP() {}
 
-    public static void init() {
-        LOCK.lock();
-
-        IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
-        modBus.addListener(CapabilityOP::register);
+    public static void registerItem(RegisterCapabilitiesEvent event, net.minecraft.world.item.Item item,
+            java.util.function.BiFunction<net.minecraft.world.item.ItemStack, ItemAccess, IOPStorage> provider) {
+        event.registerItem(ITEM, provider::apply, item);
     }
 
-    public static void register(RegisterCapabilitiesEvent event) {
-        event.register(IOPStorage.class);
+    /** Call from the consuming mod's RegisterCapabilitiesEvent listener for each TileBCore type. */
+    public static <T extends TileBCore> void registerBlockEntity(RegisterCapabilitiesEvent event, BlockEntityType<T> type) {
+        event.registerBlockEntity(OP, type, (tile, side) -> tile.getCapability(OP, side).orElse(null));
+        event.registerBlockEntity(net.neoforged.neoforge.capabilities.Capabilities.Energy.BLOCK, type,
+                (tile, side) -> tile.getCapability(OP, side)
+                        .filter(net.neoforged.neoforge.transfer.energy.EnergyHandler.class::isInstance)
+                        .map(net.neoforged.neoforge.transfer.energy.EnergyHandler.class::cast).orElse(null));
     }
 }

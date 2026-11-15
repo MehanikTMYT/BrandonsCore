@@ -1,17 +1,13 @@
-#version 150
+#version 330
 
-#moj_import <fog.glsl>
+#moj_import <minecraft:dynamictransforms.glsl>
+#moj_import <brandonscore:bc_params.glsl>
+
+
+#moj_import <minecraft:fog.glsl>
 #moj_import <brandonscore:math.glsl>
 
 uniform sampler2D Sampler0;
-uniform vec4 ColorModulator;
-uniform float FogStart;
-uniform float FogEnd;
-uniform vec4 FogColor;
-uniform vec4 BaseColor;
-uniform float Time;
-uniform float Transition;
-
 in vec3 fPos;
 in vec3 vPos;
 in float vertexDistance;
@@ -73,5 +69,5 @@ void main() {
     colour.rgb = mix(overlayColor.rgb, colour.rgb, overlayColor.a);
     colour *= lightMapColor;
 
-    fragColor = linear_fog(colour, vertexDistance, FogStart, FogEnd, FogColor);
+    fragColor = apply_fog(colour, vertexDistance, vertexDistance, FogEnvironmentalStart, FogEnvironmentalEnd, FogRenderDistanceStart, FogRenderDistanceEnd, FogColor);
 }

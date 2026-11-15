@@ -18,7 +18,7 @@ import com.brandon3055.brandonscore.lib.datamanager.*;
 import com.brandon3055.brandonscore.network.BCoreNetwork;
 import com.brandon3055.brandonscore.network.ServerPacketHandler;
 import com.brandon3055.brandonscore.utils.EnergyUtils;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -35,10 +35,10 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.neoforged.neoforge.common.MinecraftForge;
-import net.neoforged.neoforge.capabilities.Capability;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.capabilities.BaseCapability;
 import com.brandon3055.brandonscore.lib.datamanager.BCSerializable;
-import com.brandon3055.brandonscore.lib.Optional;
+import java.util.Optional;
 import net.neoforged.fml.util.thread.EffectiveSide;
 import net.neoforged.neoforge.items.IItemHandler;
 import org.apache.logging.log4j.LogManager;
@@ -59,7 +59,7 @@ import static com.brandon3055.brandonscore.lib.datamanager.DataFlags.*;
  * Created by brandon3055 on 26/3/2016.
  * Base tile entity class for all tile entities
  */
-public class TileBCore extends BlockEntity implements IDataManagerProvider, IDataRetainingTile, Nameable {
+public class TileBCore extends BlockEntity implements com.brandon3055.brandonscore.capability.BCapabilityProvider, IDataManagerProvider, IDataRetainingTile, Nameable {
     public static final Logger LOGGER = LogManager.getLogger();
 
     protected boolean playerAccessTracking = false;
@@ -138,17 +138,18 @@ public class TileBCore extends BlockEntity implements IDataManagerProvider, IDat
     }
 
     @Override
-    public CompoundTag getUpdateTag() {
-        CompoundTag compound = super.getUpdateTag();
+    public CompoundTag getUpdateTag(net.minecraft.core.HolderLookup.Provider provider) {
+        CompoundTag compound = super.getUpdateTag(provider);
         dataManager.writeSyncNBT(compound);
         writeExtraNBT(compound);
         return compound;
     }
 
     @Override
-    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
-        dataManager.readSyncNBT(pkt.getTag());
-        readExtraNBT(pkt.getTag());
+    public void onDataPacket(Connection net, net.minecraft.world.level.storage.ValueInput input) {
+        CompoundTag tag = input.read(com.mojang.serialization.MapCodec.assumeMapUnsafe(CompoundTag.CODEC)).orElseGet(CompoundTag::new);
+        dataManager.readSyncNBT(tag);
+        readExtraNBT(tag);
     }
 
     public PacketCustom createServerBoundPacket(int id) {
@@ -161,7 +162,7 @@ public class TileBCore extends BlockEntity implements IDataManagerProvider, IDat
                 return packet;
             }
         }
-        return new PacketCustom(BCoreNetwork.CHANNEL, BCoreNetwork.S_DUMMY_PACKET);
+        return new PacketCustom(BCoreNetwork.CHANNEL, BCoreNetwork.S_DUMMY_PACKET, level.registryAccess());
     }
 
     /**
@@ -185,7 +186,7 @@ public class TileBCore extends BlockEntity implements IDataManagerProvider, IDat
     }
 
     public PacketCustom createClientBoundPacket(int id) {
-        PacketCustom packet = new PacketCustom(BCoreNetwork.CHANNEL, BCoreNetwork.C_TILE_MESSAGE);
+        PacketCustom packet = new PacketCustom(BCoreNetwork.CHANNEL, BCoreNetwork.C_TILE_MESSAGE, level.registryAccess());
         packet.writePos(worldPosition);
         packet.writeByte((byte) id);
         return packet;
@@ -258,7 +259,7 @@ public class TileBCore extends BlockEntity implements IDataManagerProvider, IDat
 
     public void dirtyBlock() {
         LevelChunk chunk = level.getChunkAt(getBlockPos());
-        chunk.setUnsaved(true);
+        chunk.markUnsaved();
     }
 
     /**
@@ -301,9 +302,9 @@ public class TileBCore extends BlockEntity implements IDataManagerProvider, IDat
     @Override
     public void readFromItemStack(CompoundTag nbt) {
         dataManager.readFromStackNBT(nbt);
-        savedItemDataObjects.forEach((tagName, serializable) -> serializable.deserializeNBT(nbt.getCompound(tagName)));
+        savedItemDataObjects.forEach((tagName, serializable) -> serializable.deserializeNBT(nbt.getCompoundOrEmpty(tagName)));
         if (nbt.contains("bc_caps")) {
-            capManager.deserialize(nbt.getCompound("bc_caps"));
+            capManager.deserialize(nbt.getCompoundOrEmpty("bc_caps"));
         }
         readExtraTileAndStack(nbt);
     }
@@ -330,14 +331,14 @@ public class TileBCore extends BlockEntity implements IDataManagerProvider, IDat
 
     public void readExtraNBT(CompoundTag nbt) {
         if (nbt.contains("bc_caps")) {
-            capManager.deserialize(nbt.getCompound("bc_caps"));
+            capManager.deserialize(nbt.getCompoundOrEmpty("bc_caps"));
         }
 
-        if (nbt.contains("custom_name", 8)) {
-            customName = nbt.getString("custom_name");
+        if ((nbt.get("custom_name") instanceof net.minecraft.nbt.StringTag)) {
+            customName = nbt.getStringOr("custom_name", "");
         }
 
-        savedDataObjects.forEach((tagName, serializable) -> serializable.deserializeNBT(nbt.getCompound(tagName)));
+        savedDataObjects.forEach((tagName, serializable) -> serializable.deserializeNBT(nbt.getCompoundOrEmpty(tagName)));
         readExtraTileAndStack(nbt);
     }
 
@@ -356,17 +357,20 @@ public class TileBCore extends BlockEntity implements IDataManagerProvider, IDat
     public void readExtraTileAndStack(CompoundTag nbt) {}
 
     @Override
-    protected final void saveAdditional(CompoundTag nbt) {
-        super.saveAdditional(nbt);
-        dataManager.writeToNBT(nbt);
-        writeExtraNBT(nbt);
+    protected final void saveAdditional(net.minecraft.world.level.storage.ValueOutput output) {
+        super.saveAdditional(output);
+        CompoundTag tag = new CompoundTag();
+        dataManager.writeToNBT(tag);
+        writeExtraNBT(tag);
+        output.store(tag);
     }
 
     @Override
-    public void load(CompoundTag nbt) {
-        super.load(nbt);
-        dataManager.readFromNBT(nbt);
-        readExtraNBT(nbt);
+    protected void loadAdditional(net.minecraft.world.level.storage.ValueInput input) {
+        super.loadAdditional(input);
+        CompoundTag tag = input.read(com.mojang.serialization.MapCodec.assumeMapUnsafe(CompoundTag.CODEC)).orElseGet(CompoundTag::new);
+        dataManager.readFromNBT(tag);
+        readExtraNBT(tag);
         onTileLoaded();
     }
 
@@ -395,14 +399,13 @@ public class TileBCore extends BlockEntity implements IDataManagerProvider, IDat
 
     @Nonnull
     @Override
-    public <T> Optional<T> getCapability(@Nonnull Capability<T> capability, @Nullable Direction side) {
+    public <T> Optional<T> getCapability(@Nonnull BaseCapability<T, ?> capability, @Nullable Direction side) {
         Optional<T> ret = capManager.getCapability(capability, side);
-        return ret.isPresent() ? ret : super.getCapability(capability, side);
+        return ret;
     }
 
-    @Override
     public void invalidateCaps() {
-        super.invalidateCaps();
+        invalidateCapabilities();
         capManager.invalidate();
     }
 
@@ -665,7 +668,7 @@ public class TileBCore extends BlockEntity implements IDataManagerProvider, IDat
 
     public void debug(Object text) {
         if (debugEnabled()) {
-            LOGGER.info("TileDebug:" + getBlockPos() + ", " + getLevel().dimension().location() + ": " + text);
+            LOGGER.info("TileDebug:" + getBlockPos() + ", " + getLevel().dimension().identifier() + ": " + text);
         }
     }
 

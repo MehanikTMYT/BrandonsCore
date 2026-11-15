@@ -61,26 +61,24 @@ public abstract class WorldEntity {
     }
 
     private void writeInternal(CompoundTag nbt) {
-        ResourceLocation resourcelocation = WorldEntityType.getId(this.getType());
+        Identifier resourcelocation = WorldEntityType.getId(this.getType());
         if (resourcelocation == null) {
             throw new RuntimeException(this.getClass() + " is missing a mapping! This is a bug!");
         } else {
             nbt.putString("id", resourcelocation.toString());
-            nbt.putUUID("UUID", this.getUniqueID());
+            nbt.store("UUID", net.minecraft.core.UUIDUtil.CODEC, this.getUniqueID());
         }
     }
 
     private void readInternal(CompoundTag nbt) {
-        if (nbt.hasUUID("UUID")) {
-            this.uniqueID = nbt.getUUID("UUID");
-        }
+        nbt.read("UUID", net.minecraft.core.UUIDUtil.CODEC).ifPresent(id -> this.uniqueID = id);
     }
 
 
     @Nullable
     public static WorldEntity readWorldEntity(CompoundTag nbt) {
-        String id = nbt.getString("id");
-        return Optional.ofNullable(WorldEntityHandler.REGISTRY.getValue(new ResourceLocation(id)))
+        String id = nbt.getStringOr("id", "");
+        return Optional.ofNullable(WorldEntityHandler.REGISTRY.getValue(Identifier.parse(id)))
                 .map(e -> {
                     try {
                         return e.create();

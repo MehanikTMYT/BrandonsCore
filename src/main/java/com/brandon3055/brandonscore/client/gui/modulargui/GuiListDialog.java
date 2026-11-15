@@ -1,11 +1,11 @@
 package com.brandon3055.brandonscore.client.gui.modulargui;
 
-import codechicken.lib.gui.modular.ModularGui;
-import codechicken.lib.gui.modular.elements.*;
-import codechicken.lib.gui.modular.lib.Constraints;
-import codechicken.lib.gui.modular.lib.TextState;
-import codechicken.lib.gui.modular.lib.geometry.Axis;
-import codechicken.lib.gui.modular.lib.geometry.GuiParent;
+import com.brandon3055.brandonscore.client.gui.modular.ModularGui;
+import com.brandon3055.brandonscore.client.gui.modular.elements.*;
+import com.brandon3055.brandonscore.client.gui.modular.lib.Constraints;
+import com.brandon3055.brandonscore.client.gui.modular.lib.TextState;
+import com.brandon3055.brandonscore.client.gui.modular.lib.geometry.Axis;
+import com.brandon3055.brandonscore.client.gui.modular.lib.geometry.GuiParent;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
 
@@ -14,9 +14,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.Function;
 
-import static codechicken.lib.gui.modular.lib.geometry.Constraint.*;
-import static codechicken.lib.gui.modular.lib.geometry.Constraint.match;
-import static codechicken.lib.gui.modular.lib.geometry.GeoParam.*;
+import static com.brandon3055.brandonscore.client.gui.modular.lib.geometry.Constraint.*;
+import static com.brandon3055.brandonscore.client.gui.modular.lib.geometry.Constraint.match;
+import static com.brandon3055.brandonscore.client.gui.modular.lib.geometry.GeoParam.*;
 
 /**
  * Created by brandon3055 on 16/02/2024

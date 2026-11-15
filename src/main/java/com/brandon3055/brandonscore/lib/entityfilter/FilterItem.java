@@ -140,7 +140,7 @@ public class FilterItem extends FilterBase {
         if (isTagMode()) {
             match = stack.is(getTag());
         } else if (!filterStack.isEmpty()) {
-            match = fuzzyMatch ? ItemStack.isSameItem(filterStack, stack) : ItemStack.isSameItemSameTags(filterStack, stack) && (filterStack.getCount() == stack.getCount() || !matchCount);
+            match = fuzzyMatch ? ItemStack.isSameItem(filterStack, stack) : ItemStack.isSameItemSameComponents(filterStack, stack) && (filterStack.getCount() == stack.getCount() || !matchCount);
         }
 
         if (filterStack.isEmpty() && !isTagMode()) {
@@ -155,7 +155,7 @@ public class FilterItem extends FilterBase {
 
     public TagKey<Item> getTag() {
         if (tagCache == null) {
-            tagCache = ItemTags.create(new ResourceLocation(tagString));
+            tagCache = ItemTags.create(Identifier.parse(tagString));
         }
         return tagCache;
     }
@@ -165,13 +165,12 @@ public class FilterItem extends FilterBase {
         return FilterType.ITEM_FILTER;
     }
 
-    @Override
-    public CompoundTag serializeNBT() {
-        CompoundTag compound = super.serializeNBT();
+    public CompoundTag serializeNBT(net.minecraft.core.HolderLookup.Provider registries) {
+        CompoundTag compound = super.serializeNBT(registries);
         compound.putBoolean("whitelist_mode", whitelistMode);
         compound.putString("tag_string", tagString);
         compound.putBoolean("tag_mode", tagMode);
-        compound.put("filter_stack", filterStack.serializeNBT());
+        compound.put("filter_stack", ItemStack.OPTIONAL_CODEC.encodeStart(registries.createSerializationContext(net.minecraft.nbt.NbtOps.INSTANCE), filterStack).getOrThrow());
         compound.putBoolean("fuzzy_match", fuzzyMatch);
         compound.putBoolean("match_count", matchCount);
         compound.putBoolean("filter_blocks", filterBlocks);
@@ -179,17 +178,16 @@ public class FilterItem extends FilterBase {
         return compound;
     }
 
-    @Override
-    public void deserializeNBT(CompoundTag compound) {
-        super.deserializeNBT(compound);
-        whitelistMode = compound.getBoolean("whitelist_mode");
-        tagString = compound.getString("tag_string");
-        tagMode = compound.getBoolean("tag_mode");
-        filterStack = ItemStack.of(compound.getCompound("filter_stack"));
-        fuzzyMatch = compound.getBoolean("fuzzy_match");
-        matchCount = compound.getBoolean("match_count");
-        filterBlocks = compound.getBoolean("filter_blocks");
-        filterItems = compound.getBoolean("filter_items");
+    public void deserializeNBT(net.minecraft.core.HolderLookup.Provider registries, CompoundTag compound) {
+        super.deserializeNBT(registries, compound);
+        whitelistMode = compound.getBooleanOr("whitelist_mode", false);
+        tagString = compound.getStringOr("tag_string", "");
+        tagMode = compound.getBooleanOr("tag_mode", false);
+        filterStack = ItemStack.OPTIONAL_CODEC.parse(registries.createSerializationContext(net.minecraft.nbt.NbtOps.INSTANCE), compound.getCompoundOrEmpty("filter_stack")).getOrThrow();
+        fuzzyMatch = compound.getBooleanOr("fuzzy_match", false);
+        matchCount = compound.getBooleanOr("match_count", false);
+        filterBlocks = compound.getBooleanOr("filter_blocks", false);
+        filterItems = compound.getBooleanOr("filter_items", false);
     }
 
     @Override

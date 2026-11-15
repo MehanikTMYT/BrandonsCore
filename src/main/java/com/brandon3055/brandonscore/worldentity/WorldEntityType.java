@@ -20,7 +20,7 @@ public class WorldEntityType<T extends WorldEntity> {
     }
 
     @Nullable
-    public static ResourceLocation getId(WorldEntityType<?> tileEntityTypeIn) {
+    public static Identifier getId(WorldEntityType<?> tileEntityTypeIn) {
         return WorldEntityHandler.REGISTRY.getKey(tileEntityTypeIn);
     }
 }

@@ -1,11 +1,11 @@
 package com.brandon3055.brandonscore.client.gui;
 
-import codechicken.lib.gui.modular.ModularGui;
-import codechicken.lib.gui.modular.elements.*;
-import codechicken.lib.gui.modular.lib.Constraints;
-import codechicken.lib.gui.modular.lib.GuiRender;
-import codechicken.lib.gui.modular.lib.geometry.*;
-import codechicken.lib.gui.modular.sprite.Material;
+import com.brandon3055.brandonscore.client.gui.modular.ModularGui;
+import com.brandon3055.brandonscore.client.gui.modular.elements.*;
+import com.brandon3055.brandonscore.client.gui.modular.lib.Constraints;
+import com.brandon3055.brandonscore.client.gui.modular.lib.GuiRender;
+import com.brandon3055.brandonscore.client.gui.modular.lib.geometry.*;
+import com.brandon3055.brandonscore.client.gui.modular.sprite.Material;
 import com.brandon3055.brandonscore.BCConfig;
 import com.brandon3055.brandonscore.api.power.IOPStorage;
 import com.brandon3055.brandonscore.client.BCGuiTextures;
@@ -23,8 +23,8 @@ import java.util.Locale;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import static codechicken.lib.gui.modular.lib.geometry.Constraint.*;
-import static codechicken.lib.gui.modular.lib.geometry.GeoParam.*;
+import static com.brandon3055.brandonscore.client.gui.modular.lib.geometry.Constraint.*;
+import static com.brandon3055.brandonscore.client.gui.modular.lib.geometry.GeoParam.*;
 import static com.brandon3055.brandonscore.BCConfig.darkMode;
 
 /**
@@ -176,7 +176,7 @@ public class GuiToolkit {
         GuiTexture icon = new GuiTexture(button, () -> BCGuiTextures.get("redstone/" + switchable.getRSMode().name().toLowerCase(Locale.ENGLISH)));
         Constraints.bind(icon, button);
         button.setTooltipSingle(() -> translateInternal("rs_mode." + switchable.getRSMode().name().toLowerCase(Locale.ENGLISH)));
-        button.onPress(() -> switchable.setRSMode(switchable.getRSMode().next(Screen.hasShiftDown())), GuiButton.LEFT_CLICK);
+        button.onPress(() -> switchable.setRSMode(switchable.getRSMode().next(net.minecraft.client.Minecraft.getInstance().hasShiftDown())), GuiButton.LEFT_CLICK);
         button.onPress(() -> switchable.setRSMode(switchable.getRSMode().next(true)), GuiButton.RIGHT_CLICK);
         return button;
     }

@@ -3,13 +3,13 @@ package com.brandon3055.brandonscore.mixin;
 import com.brandon3055.brandonscore.BrandonsCore;
 import com.brandon3055.brandonscore.api.ElytraEnabledItem;
 import net.covers1624.quack.util.SneakyUtils;
-import net.minecraft.client.model.PlayerModel;
+
 import net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ElytraItem;
+
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -35,25 +35,22 @@ public abstract class LivingEntityMixin implements EntityAccessor{
         return (LivingEntity) (Object) this;
     }
 
-    @SuppressWarnings("InvalidInjectorMethodSignature")
-    @Inject(
-            method = "updateFallFlying",
-            at = @At(
-                    value = "INVOKE_ASSIGN",
-                    target = "Lnet/minecraft/world/entity/LivingEntity;getItemBySlot(Lnet/minecraft/world/entity/EquipmentSlot;)Lnet/minecraft/world/item/ItemStack;",
-                    shift = At.Shift.AFTER
-            ),
-            locals = LocalCapture.CAPTURE_FAILHARD,
-            cancellable = true
-    )
-    private void updateFallFlying(CallbackInfo ci, boolean flag, ItemStack itemstack) {
+    @Inject(method = "updateFallFlying()V", at = @At("HEAD"), cancellable = true)
+    private void updateFallFlying(CallbackInfo ci) {
+        LivingEntity entity = getThis();
+        if (!entity.isFallFlying() || entity.onGround() || entity.isPassenger()
+                || entity.hasEffect(MobEffects.LEVITATION)) return;
+        ItemStack itemstack = entity.getItemBySlot(EquipmentSlot.CHEST);
         if (itemstack.getItem() instanceof ElytraEnabledItem item && item.canElytraFlyBC(itemstack, getThis()) && item.elytraFlightTickBC(itemstack, getThis(), getThis().getFallFlyingTicks())) {
+            entity.checkFallDistanceAccumulation();
             ci.cancel();
+            return;
         }
 
         if (BrandonsCore.equipmentManager != null) {
             ItemStack stack = BrandonsCore.equipmentManager.findMatchingItem(e -> e.getItem() instanceof ElytraEnabledItem item && item.canElytraFlyBC(e, getThis()), getThis());
             if (stack.getItem() instanceof ElytraEnabledItem item && item.elytraFlightTickBC(stack, getThis(), getThis().getFallFlyingTicks())) {
+                entity.checkFallDistanceAccumulation();
                 ci.cancel();
             }
         }

@@ -1,8 +1,8 @@
 package com.brandon3055.brandonscore.api.hud;
 
-import codechicken.lib.gui.modular.elements.GuiContextMenu;
-import codechicken.lib.gui.modular.elements.GuiElement;
-import codechicken.lib.gui.modular.lib.GuiRender;
+import com.brandon3055.brandonscore.client.gui.modular.elements.GuiContextMenu;
+import com.brandon3055.brandonscore.client.gui.modular.elements.GuiElement;
+import com.brandon3055.brandonscore.client.gui.modular.lib.GuiRender;
 import com.brandon3055.brandonscore.api.math.Vector2;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
@@ -61,7 +61,7 @@ public abstract class AbstractHudElement {
      * Use this to render your hud element. The given matrix has not had any transformation applied
      * but is wrapped in push and pop for convenience.
      *
-     * @param mStack      The matrix stack.
+     * @param render      The GUI extraction context.
      * @param configuring This will be true when the hud config gui is open.
      */
     public abstract void render(GuiRender render, float partialTicks, boolean configuring);
@@ -124,9 +124,9 @@ public abstract class AbstractHudElement {
     }
 
     public void readNBT(CompoundTag nbt) {
-        enabled = nbt.getBoolean("enabled");
-        rawPos.x = nbt.getDouble("pos_x");
-        rawPos.y = nbt.getDouble("pos_y");
+        enabled = nbt.getBooleanOr("enabled", false);
+        rawPos.x = nbt.getDoubleOr("pos_x", 0D);
+        rawPos.y = nbt.getDoubleOr("pos_y", 0D);
     }
 
     public void setChangeListener(Runnable changeListener) {

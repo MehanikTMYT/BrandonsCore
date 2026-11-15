@@ -25,7 +25,7 @@ public class Vector2 {
     }
 
     public static Vector2 fromNBT(CompoundTag tag) {
-        return new Vector2(tag.getDouble("x"), tag.getDouble("y"));
+        return new Vector2(tag.getDoubleOr("x", 0D), tag.getDoubleOr("y", 0D));
     }
 
     public CompoundTag writeToNBT(CompoundTag tag) {

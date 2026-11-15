@@ -1,7 +1,7 @@
 package com.brandon3055.brandonscore.client.gui.modulargui.templates;
 
-import codechicken.lib.gui.modular.ModularGui;
-import codechicken.lib.gui.modular.elements.GuiElement;
+import com.brandon3055.brandonscore.client.gui.modular.ModularGui;
+import com.brandon3055.brandonscore.client.gui.modular.elements.GuiElement;
 import com.brandon3055.brandonscore.blocks.TileBCore;
 import com.brandon3055.brandonscore.client.gui.GuiToolkit;
 import com.brandon3055.brandonscore.lib.IRSSwitchable;

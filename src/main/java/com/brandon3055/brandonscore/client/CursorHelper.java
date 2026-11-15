@@ -3,7 +3,7 @@
 //import com.brandon3055.brandonscore.BrandonsCore;
 //import net.minecraft.client.Minecraft;
 //import net.minecraft.resources.Identifier;
-//import net.neoforged.client.event.ScreenEvent;
+//import net.neoforged.neoforge.client.event.ScreenEvent;
 //import org.lwjgl.BufferUtils;
 //import org.lwjgl.glfw.GLFW;
 //import org.lwjgl.glfw.GLFWImage;
@@ -21,15 +21,15 @@
 // */
 //public class CursorHelper {
 //
-//    public static final ResourceLocation DRAG = new ResourceLocation(BrandonsCore.MODID, "textures/gui/cursors/drag.png");
-//    public static final ResourceLocation RESIZE_H = new ResourceLocation(BrandonsCore.MODID, "textures/gui/cursors/resize_h.png");
-//    public static final ResourceLocation RESIZE_V = new ResourceLocation(BrandonsCore.MODID, "textures/gui/cursors/resize_v.png");
-//    public static final ResourceLocation RESIZE_TRBL = new ResourceLocation(BrandonsCore.MODID, "textures/gui/cursors/resize_diag_trbl.png");
-//    public static final ResourceLocation RESIZE_TLBR = new ResourceLocation(BrandonsCore.MODID, "textures/gui/cursors/resize_diag_tlbr.png");
-//    private static Map<ResourceLocation, Long> cursors = new HashMap<>();
-//    private static ResourceLocation active = null;
+//    public static final Identifier DRAG = Identifier.fromNamespaceAndPath(BrandonsCore.MODID, "textures/gui/cursors/drag.png");
+//    public static final Identifier RESIZE_H = Identifier.fromNamespaceAndPath(BrandonsCore.MODID, "textures/gui/cursors/resize_h.png");
+//    public static final Identifier RESIZE_V = Identifier.fromNamespaceAndPath(BrandonsCore.MODID, "textures/gui/cursors/resize_v.png");
+//    public static final Identifier RESIZE_TRBL = Identifier.fromNamespaceAndPath(BrandonsCore.MODID, "textures/gui/cursors/resize_diag_trbl.png");
+//    public static final Identifier RESIZE_TLBR = Identifier.fromNamespaceAndPath(BrandonsCore.MODID, "textures/gui/cursors/resize_diag_tlbr.png");
+//    private static Map<Identifier, Long> cursors = new HashMap<>();
+//    private static Identifier active = null;
 //
-//    private static long createCursor(ResourceLocation resource) {
+//    private static long createCursor(Identifier resource) {
 //        try {
 //            BufferedImage bufferedimage = ImageIO.read(Minecraft.getInstance().getResourceManager().getResource(resource).get().open());
 //            GLFWImage glfwImage = imageToGLFWImage(bufferedimage);
@@ -71,7 +71,7 @@
 //        resetCursor();
 //    }
 //
-//    public static void setCursor(@Nullable ResourceLocation cursor) {
+//    public static void setCursor(@Nullable Identifier cursor) {
 //        if (cursor != active) {
 //            active = cursor;
 //            long window = Minecraft.getInstance().getWindow().getWindow();

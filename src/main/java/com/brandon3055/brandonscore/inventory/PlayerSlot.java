@@ -8,7 +8,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import com.brandon3055.brandonscore.lib.Optional;
+import java.util.Optional;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
 
 import javax.annotation.Nullable;
@@ -22,6 +22,10 @@ import static com.brandon3055.brandonscore.BrandonsCore.equipmentManager;
  * The slot field corresponds to the index of the item within the sub inventory for the given category.
  */
 public class PlayerSlot {
+    // Preserve the serialized pre-26 armor indices: feet, legs, chest, head.
+    private static final EquipmentSlot[] ARMOR_SLOTS = {
+            EquipmentSlot.FEET, EquipmentSlot.LEGS, EquipmentSlot.CHEST, EquipmentSlot.HEAD
+    };
 
     private int slot;
     private EnumInvCategory category;
@@ -36,7 +40,7 @@ public class PlayerSlot {
             this.slot = 0;
             this.category = EnumInvCategory.OFF_HAND;
         } else {
-            this.slot = player.getInventory().selected;
+            this.slot = player.getInventory().getSelectedSlot();
             this.category = EnumInvCategory.MAIN;
         }
     }
@@ -90,23 +94,23 @@ public class PlayerSlot {
 
     public void setStackInSlot(Player player, ItemStack stack) {
         if (category == EnumInvCategory.ARMOR) {
-            if (slot < 0 || slot >= player.getInventory().armor.size()) {
+            if (slot < 0 || slot >= ARMOR_SLOTS.length) {
                 LogHelperBC.error("PlayerSlot: Could not insert into the specified slot because the specified slot does not exist! Slot: " + slot + ", Inventory: " + category + ", Stack: " + stack);
                 return;
             }
-            player.getInventory().armor.set(slot, stack);
+            player.setItemSlot(ARMOR_SLOTS[slot], stack);
         } else if (category == EnumInvCategory.MAIN) {
-            if (slot < 0 || slot >= player.getInventory().items.size()) {
+            if (slot < 0 || slot >= player.getInventory().getNonEquipmentItems().size()) {
                 LogHelperBC.error("PlayerSlot: Could not insert into the specified slot because the specified slot does not exist! Slot: " + slot + ", Inventory: " + category + ", Stack: " + stack);
                 return;
             }
-            player.getInventory().items.set(slot, stack);
+            player.getInventory().getNonEquipmentItems().set(slot, stack);
         } else if (category == EnumInvCategory.OFF_HAND) {
-            if (slot < 0 || slot >= player.getInventory().offhand.size()) {
+            if (slot < 0 || slot >= 1) {
                 LogHelperBC.error("PlayerSlot: Could not insert into the specified slot because the specified slot does not exist! Slot: " + slot + ", Inventory: " + category + ", Stack: " + stack);
                 return;
             }
-            player.getInventory().offhand.set(slot, stack);
+            player.setItemSlot(EquipmentSlot.OFFHAND, stack);
         } else if (category == EnumInvCategory.EQUIPMENT && equipmentManager != null) {
             Optional<IItemHandlerModifiable> optional = equipmentManager.getInventory(player);
             if (optional.isPresent()) {
@@ -121,20 +125,20 @@ public class PlayerSlot {
     }
 
     public static PlayerSlot findStack(Inventory inv, Predicate<ItemStack> check) {
-        for (int i = 0; i < inv.items.size(); i++) {
-            ItemStack stack = inv.items.get(i);
+        for (int i = 0; i < inv.getNonEquipmentItems().size(); i++) {
+            ItemStack stack = inv.getNonEquipmentItems().get(i);
             if (!stack.isEmpty() && check.test(stack)) {
                 return new PlayerSlot(i, EnumInvCategory.MAIN);
             }
         }
-        for (int i = 0; i < inv.armor.size(); i++) {
-            ItemStack stack = inv.armor.get(i);
+        for (int i = 0; i < ARMOR_SLOTS.length; i++) {
+            ItemStack stack = inv.player.getItemBySlot(ARMOR_SLOTS[i]);
             if (!stack.isEmpty() && check.test(stack)) {
                 return new PlayerSlot(i, EnumInvCategory.ARMOR);
             }
         }
-        for (int i = 0; i < inv.offhand.size(); i++) {
-            ItemStack stack = inv.offhand.get(i);
+        for (int i = 0; i < 1; i++) {
+            ItemStack stack = inv.player.getOffhandItem();
             if (!stack.isEmpty() && check.test(stack)) {
                 return new PlayerSlot(i, EnumInvCategory.OFF_HAND);
             }
@@ -155,23 +159,23 @@ public class PlayerSlot {
     }
 
     public static PlayerSlot findStackActiveFirst(Inventory inv, Predicate<ItemStack> check) {
-        if (!inv.getSelected().isEmpty() && check.test(inv.getSelected())) {
-            return new PlayerSlot(inv.selected, EnumInvCategory.MAIN);
+        if (!inv.getSelectedItem().isEmpty() && check.test(inv.getSelectedItem())) {
+            return new PlayerSlot(inv.getSelectedSlot(), EnumInvCategory.MAIN);
         }
-        for (int i = 0; i < inv.offhand.size(); i++) {
-            ItemStack stack = inv.offhand.get(i);
+        for (int i = 0; i < 1; i++) {
+            ItemStack stack = inv.player.getOffhandItem();
             if (!stack.isEmpty() && check.test(stack)) {
                 return new PlayerSlot(i, EnumInvCategory.OFF_HAND);
             }
         }
-        for (int i = 0; i < inv.armor.size(); i++) {
-            ItemStack stack = inv.armor.get(i);
+        for (int i = 0; i < ARMOR_SLOTS.length; i++) {
+            ItemStack stack = inv.player.getItemBySlot(ARMOR_SLOTS[i]);
             if (!stack.isEmpty() && check.test(stack)) {
                 return new PlayerSlot(i, EnumInvCategory.ARMOR);
             }
         }
-        for (int i = 0; i < inv.items.size(); i++) {
-            ItemStack stack = inv.items.get(i);
+        for (int i = 0; i < inv.getNonEquipmentItems().size(); i++) {
+            ItemStack stack = inv.getNonEquipmentItems().get(i);
             if (!stack.isEmpty() && check.test(stack)) {
                 return new PlayerSlot(i, EnumInvCategory.MAIN);
             }
@@ -212,11 +216,11 @@ public class PlayerSlot {
 
     public ItemStack getStackInSlot(Player player) {
         if (category == EnumInvCategory.ARMOR) {
-            return player.getInventory().armor.get(slot);
+            return player.getItemBySlot(ARMOR_SLOTS[slot]);
         } else if (category == EnumInvCategory.MAIN) {
-            return player.getInventory().items.get(slot);
+            return player.getInventory().getNonEquipmentItems().get(slot);
         } else if (category == EnumInvCategory.OFF_HAND) {
-            return player.getInventory().offhand.get(slot);
+            return player.getOffhandItem();
         } else if (category == EnumInvCategory.EQUIPMENT && equipmentManager != null) {
             Optional<IItemHandlerModifiable> optional = equipmentManager.getInventory(player);
             if (optional.isPresent()) {

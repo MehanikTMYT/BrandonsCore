@@ -1,7 +1,7 @@
 package com.brandon3055.brandonscore.inventory;
 
 import codechicken.lib.data.MCDataInput;
-import codechicken.lib.inventory.container.modular.ModularGuiContainerMenu;
+import com.brandon3055.brandonscore.client.gui.modular.lib.container.ModularGuiContainerMenu;
 import codechicken.lib.packet.PacketCustom;
 import com.brandon3055.brandonscore.blocks.TileBCore;
 import com.brandon3055.brandonscore.network.BCoreNetwork;
@@ -14,8 +14,8 @@ import net.minecraft.world.inventory.ContainerListener;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.capabilities.ForgeCapabilities;
-import com.brandon3055.brandonscore.lib.Optional;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import java.util.Optional;
 import net.neoforged.neoforge.items.IItemHandler;
 
 import javax.annotation.Nullable;
@@ -130,7 +130,7 @@ public abstract class ContainerBCTile<T extends TileBCore> extends ModularGuiCon
      */
     @Deprecated
     public Optional<IItemHandler> getItemHandler() {
-        return tile.getCapability(ForgeCapabilities.ITEM_HANDLER, null);
+        return Optional.ofNullable(tile.getLevel().getCapability(Capabilities.Item.BLOCK, tile.getBlockPos(), null)).map(IItemHandler::of);
     }
 
     protected static <T extends BlockEntity> T getClientTile(Inventory playerInv, FriendlyByteBuf extraData) {
@@ -138,7 +138,7 @@ public abstract class ContainerBCTile<T extends TileBCore> extends ModularGuiCon
     }
 
     public PacketCustom createServerBoundPacket(int packetType) {
-        PacketCustom packet = new PacketCustom(BCoreNetwork.CHANNEL, packetType);
+        PacketCustom packet = new PacketCustom(BCoreNetwork.CHANNEL, packetType, player.registryAccess());
         packet.writeInt(containerId);
         return packet;
     }

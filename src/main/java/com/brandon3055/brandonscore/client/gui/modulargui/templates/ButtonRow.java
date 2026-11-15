@@ -1,16 +1,16 @@
 package com.brandon3055.brandonscore.client.gui.modulargui.templates;
 
-import codechicken.lib.gui.modular.elements.GuiElement;
-import codechicken.lib.gui.modular.lib.Constraints;
-import codechicken.lib.gui.modular.lib.geometry.Direction;
-import codechicken.lib.gui.modular.lib.geometry.GuiParent;
+import com.brandon3055.brandonscore.client.gui.modular.elements.GuiElement;
+import com.brandon3055.brandonscore.client.gui.modular.lib.Constraints;
+import com.brandon3055.brandonscore.client.gui.modular.lib.geometry.Direction;
+import com.brandon3055.brandonscore.client.gui.modular.lib.geometry.GuiParent;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedList;
 import java.util.function.Function;
 
-import static codechicken.lib.gui.modular.lib.geometry.Constraint.*;
-import static codechicken.lib.gui.modular.lib.geometry.GeoParam.*;
+import static com.brandon3055.brandonscore.client.gui.modular.lib.geometry.Constraint.*;
+import static com.brandon3055.brandonscore.client.gui.modular.lib.geometry.GeoParam.*;
 
 /**
  * Created by brandon3055 on 09/02/2024

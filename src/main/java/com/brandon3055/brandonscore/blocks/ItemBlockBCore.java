@@ -33,11 +33,22 @@ public class ItemBlockBCore extends BlockItem {
         return placed;
     }
 
-    @Override
+    @Deprecated
     public CompoundTag getShareTag(ItemStack stack) {
         if (getBlock() instanceof IBCoreBlock && ((IBCoreBlock) getBlock()).overrideShareTag()) {
             return ((IBCoreBlock) getBlock()).getNBTShareTag(stack);
         }
-        return super.getShareTag(stack);
+        return com.brandon3055.brandonscore.utils.ItemNBTHelper.getCompound(stack);
+    }
+    @Override
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context,
+            net.minecraft.world.item.component.TooltipDisplay display,
+            java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip, net.minecraft.world.item.TooltipFlag flag) {
+        super.appendHoverText(stack, context, display, tooltip, flag);
+        if (getBlock() instanceof BlockBCore block) {
+            java.util.List<net.minecraft.network.chat.Component> lines = new java.util.ArrayList<>();
+            block.appendHoverText(stack, lines);
+            lines.forEach(tooltip);
+        }
     }
 }

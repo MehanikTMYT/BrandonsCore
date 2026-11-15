@@ -10,7 +10,7 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
-import net.neoforged.neoforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -45,12 +45,12 @@ public abstract class MultiBlockProvider implements DataProvider {
 
         List<CompletableFuture<?>> futures = new LinkedList<>();
         for (String name : builtMultiBlocks.keySet()) {
-            futures.add(saveMultiBlock(pOutput, new ResourceLocation(modid, name), builtMultiBlocks.get(name)));
+            futures.add(saveMultiBlock(pOutput, Identifier.fromNamespaceAndPath(modid, name), builtMultiBlocks.get(name)));
         }
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
     }
 
-    private CompletableFuture<?> saveMultiBlock(CachedOutput cache, ResourceLocation id, JsonObject multiBlockJson) {
+    private CompletableFuture<?> saveMultiBlock(CachedOutput cache, Identifier id, JsonObject multiBlockJson) {
         Path output = gen.getPackOutput().getOutputFolder(PackOutput.Target.DATA_PACK).resolve(modid + "/multiblocks/" + id.getPath() + ".json");
         return DataProvider.saveStable(cache, multiBlockJson, output);
     }
@@ -101,11 +101,11 @@ public abstract class MultiBlockProvider implements DataProvider {
         }
 
         public Builder key(char key, Block block) {
-            return key(key, "block", ForgeRegistries.BLOCKS.getKey(block).toString());
+            return key(key, "block", BuiltInRegistries.BLOCK.getKey(block).toString());
         }
 
         public Builder key(char key, Supplier<? extends Block> block) {
-            return key(key, "block", ForgeRegistries.BLOCKS.getKey(block.get()).toString());
+            return key(key, "block", BuiltInRegistries.BLOCK.getKey(block.get()).toString());
         }
 
         /**

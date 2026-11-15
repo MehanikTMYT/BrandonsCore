@@ -1,7 +1,8 @@
 package com.brandon3055.brandonscore.api;
 
-import net.neoforged.neoforge.common.MinecraftForge;
-import net.neoforged.event.TickEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.util.thread.EffectiveSide;
 
@@ -18,17 +19,13 @@ public class TimeKeeper {
     }
 
     @SubscribeEvent
-    protected void clientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase == TickEvent.Phase.END) {
-            clientTick++;
-        }
+    protected void clientTick(ClientTickEvent.Post event) {
+        clientTick++;
     }
 
     @SubscribeEvent
-    protected void serverTick(TickEvent.ServerTickEvent event) {
-        if (event.phase == TickEvent.Phase.END) {
-            serverTick++;
-        }
+    protected void serverTick(ServerTickEvent.Post event) {
+        serverTick++;
     }
 
     public static int getServerTick() {

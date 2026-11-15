@@ -20,31 +20,27 @@ import java.util.Locale;
  */
 public class IntParticleType extends ParticleType<IntParticleType.IntParticleData> {
 
-    private static ParticleOptions.Deserializer<IntParticleData> DESERIALIZER = new ParticleOptions.Deserializer<>() {
-        @Override
-        public IntParticleData fromCommand(ParticleType<IntParticleData> particleTypeIn, StringReader reader) throws CommandSyntaxException {
-            List<Integer> list = new ArrayList<>();
-            while (reader.peek() == ' ') {
-                reader.expect(' ');
-                list.add((int) reader.readInt());
-            }
-
-            return new IntParticleData(particleTypeIn, DataUtils.toPrimitive(list.toArray(new Integer[0])));
-        }
-
-        @Override
-        public IntParticleData fromNetwork(ParticleType<IntParticleData> particleTypeIn, FriendlyByteBuf buffer) {
-            return new IntParticleData(particleTypeIn, buffer.readByte());
-        }
-    };
-
     public IntParticleType(boolean alwaysShow) {
-        super(alwaysShow, DESERIALIZER);
+        super(alwaysShow);
     }
 
     @Override
-    public Codec<IntParticleData> codec() {
-        return null;
+    public com.mojang.serialization.MapCodec<IntParticleData> codec() {
+        return Codec.INT.listOf().fieldOf("data").xmap(
+                values -> new IntParticleData(this, values.stream().mapToInt(Integer::intValue).toArray()),
+                value -> java.util.Arrays.stream(value.data).boxed().toList());
+    }
+
+    @Override
+    public net.minecraft.network.codec.StreamCodec<net.minecraft.network.RegistryFriendlyByteBuf, IntParticleData> streamCodec() {
+        return new net.minecraft.network.codec.StreamCodec<>() {
+            @Override public IntParticleData decode(net.minecraft.network.RegistryFriendlyByteBuf buffer) {
+                return new IntParticleData(IntParticleType.this, buffer.readVarIntArray());
+            }
+            @Override public void encode(net.minecraft.network.RegistryFriendlyByteBuf buffer, IntParticleData value) {
+                buffer.writeVarIntArray(value.data);
+            }
+        };
     }
 
     public static class IntParticleData implements ParticleOptions {
@@ -61,7 +57,6 @@ public class IntParticleType extends ParticleType<IntParticleType.IntParticleDat
             return type;
         }
 
-        @Override
         public void writeToNetwork(FriendlyByteBuf buffer) {
             buffer.writeVarIntArray(data);
         }
@@ -70,7 +65,6 @@ public class IntParticleType extends ParticleType<IntParticleType.IntParticleDat
             return data;
         }
 
-        @Override
         public String writeToString() {
             return String.format(Locale.ROOT, "%s %sb", BuiltInRegistries.PARTICLE_TYPE.getKey(this.getType()), DataUtils.stringArrayConcat(DataUtils.arrayToString(data), " "));
         }

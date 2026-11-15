@@ -24,11 +24,11 @@ public class InfoHelper {
 
 
     private static boolean isShiftKeyDown() {
-        return Screen.hasShiftDown();
+        return net.minecraft.client.Minecraft.getInstance().hasShiftDown();
     }
 
     private static boolean isCtrlKeyDown() {
-        return Screen.hasControlDown();
+        return net.minecraft.client.Minecraft.getInstance().hasControlDown();
     }
 
     public static boolean holdShiftForDetails(List<Component> list, boolean inverted) {

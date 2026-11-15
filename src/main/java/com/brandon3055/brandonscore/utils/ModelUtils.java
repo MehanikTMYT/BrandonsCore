@@ -11,12 +11,12 @@ import net.minecraft.client.model.geom.ModelPart;
 public class ModelUtils /*implements ResourceManagerReloadListener*/ {
 
     public static ModelPart getEntityModel(ModelLayerLocation location) {
-        return Minecraft.getInstance().getEntityRenderDispatcher().entityModels.bakeLayer(location);
+        return Minecraft.getInstance().getEntityModels().bakeLayer(location);
     }
 
 
 //    public static Map<BlockState, List<BakedQuad>> quadCache = new HashMap<BlockState, List<BakedQuad>>();
-//    public static Map<ResourceLocation, BakedModel> bakedModelCache = new HashMap<ResourceLocation, BakedModel>();
+//    public static Map<Identifier, BakedModel> bakedModelCache = new HashMap<Identifier, BakedModel>();
 //    public static Random rand = new Random();
 //
 ////    public static List<BakedQuad> getModelQuads(BlockState state) {
@@ -94,11 +94,11 @@ public class ModelUtils /*implements ResourceManagerReloadListener*/ {
 ////        }
 ////    }
 ////
-////    public static IBakedModel loadBakedModel(ResourceLocation modelLocation) {
+////    public static IBakedModel loadBakedModel(Identifier modelLocation) {
 ////        if (!bakedModelCache.containsKey(modelLocation)) {
 ////            try {
 ////                IModel model = ModelLoaderRegistry.getModel(modelLocation);
-//////                bake(ModelBakery bakery, Function<ResourceLocation, TextureAtlasSprite > spriteGetter, ISprite sprite, VertexFormat format)
+//////                bake(ModelBakery bakery, Function<Identifier, TextureAtlasSprite > spriteGetter, ISprite sprite, VertexFormat format)
 //////                IBakedModel bakedModel = model.bake(TRSRTransformation.identity(), DefaultVertexFormats.ITEM, input -> Minecraft.getInstance().getTextureMap().getAtlasSprite(input.toString()));
 ////                IBakedModel bakedModel = null;//model.bake();TODO Stuff
 ////                bakedModelCache.put(modelLocation, bakedModel);

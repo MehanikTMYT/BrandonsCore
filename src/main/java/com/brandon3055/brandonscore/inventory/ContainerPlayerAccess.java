@@ -63,7 +63,7 @@ public class ContainerPlayerAccess extends AbstractContainerMenu {
 //            }
 //        } else if (playerAccess != null) {
 //            //noinspection ConstantConditions
-//            if (server.getPlayerList().getPlayerByUUID(playerAccess.getGameProfile().getId()) != null) {
+//            if (server.getPlayerList().getPlayerByUUID(playerAccess.getGameProfile().id()) != null) {
 //                player.closeScreen();
 //                player.sendSystemMessage(new StringTextComponent("Target player is now online.").setStyle(new Style().setColor(RED)).appendSibling(new StringTextComponent("\n(run command again to re-establish inventory connection)").setStyle(new Style().setColor(WHITE))));
 //                return;
@@ -146,11 +146,10 @@ public class ContainerPlayerAccess extends AbstractContainerMenu {
 
         public boolean mayPickup(Player playerIn) {
             ItemStack itemstack = this.getItem();
-            return (itemstack.isEmpty() || playerIn.isCreative() || !EnchantmentHelper.hasBindingCurse(itemstack)) && super.mayPickup(playerIn);
+            return (itemstack.isEmpty() || playerIn.isCreative() || !EnchantmentHelper.has(itemstack, net.minecraft.world.item.enchantment.EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE)) && super.mayPickup(playerIn);
         }
 
         @Nullable
-        @OnlyIn(Dist.CLIENT)
         public String getSlotTexture() {
 //            return PlayerContainer.ARMOR_SLOT_TEXTURES[eSlot.getIndex()];
             return InventoryMenu.EMPTY_ARMOR_SLOT_BOOTS.toString();//TODO ARMOR_SLOT_TEXTURES[eSlot.getIndex()];
@@ -163,7 +162,6 @@ public class ContainerPlayerAccess extends AbstractContainerMenu {
         }
 
         @Nullable
-        @OnlyIn(Dist.CLIENT)
         public String getSlotTexture() {
             return "minecraft:items/empty_armor_slot_shield";
         }

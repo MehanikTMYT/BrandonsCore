@@ -12,14 +12,15 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderStateShard;
-import net.minecraft.client.renderer.RenderType;
+
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.client.model.EmptyModel;
+import net.neoforged.neoforge.client.model.EmptyModel;
 
 import java.util.*;
 
@@ -27,17 +28,15 @@ import java.util.*;
  * Created by brandon3055 on 25/07/2022
  */
 public class MultiBlockRenderers {
-    private static final RenderType outlineType = RenderType.create("invalid_outline", DefaultVertexFormat.POSITION_COLOR_NORMAL, VertexFormat.Mode.LINES, 256, RenderType.CompositeState.builder()
-            .setShaderState(RenderStateShard.RENDERTYPE_LINES_SHADER)
-            .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
-            .setCullState(RenderStateShard.NO_CULL)
-            .setWriteMaskState(RenderStateShard.COLOR_WRITE)
-            .setDepthTestState(RenderStateShard.NO_DEPTH_TEST)
-            .setLineState(new RenderStateShard.LineStateShard(OptionalDouble.of(4.0)))
-            .createCompositeState(false)
-    );
+    private static final RenderType outlineType = RenderType.create("brandonscore:invalid_outline",
+            net.minecraft.client.renderer.rendertype.RenderSetup.builder(
+                    com.mojang.blaze3d.pipeline.RenderPipeline.builder(net.minecraft.client.renderer.RenderPipelines.LINES_SNIPPET)
+                            .withLocation(net.minecraft.resources.Identifier.fromNamespaceAndPath("brandonscore", "pipeline/invalid_outline"))
+                            .withDepthStencilState(Optional.empty()).build()).createRenderSetup());
+    private static final net.minecraft.client.renderer.block.model.BlockDisplayContext DISPLAY_CONTEXT =
+            net.minecraft.client.renderer.block.model.BlockDisplayContext.create();
 
-    public static void renderBuildGuide(Level level, BlockPos inWorldOrigin, PoseStack poseStack, MultiBufferSource getter, MultiBlockDefinition structure, int packedLight, float partialTicks) {
+    public static void renderBuildGuide(Level level, BlockPos inWorldOrigin, PoseStack poseStack, SubmitNodeCollector collector, MultiBlockDefinition structure, int packedLight, float partialTicks) {
         Map<BlockPos, MultiBlockPart> blocks = structure.getBlocks();
         Map<MultiBlockPart, BlockState> stateMap = new IdentityHashMap<>();
         Player player = Minecraft.getInstance().player;
@@ -62,24 +61,38 @@ public class MultiBlockRenderers {
                 poseStack.pushPose();
                 poseStack.translate(pos.getX() + 0.1, pos.getY() + 0.1, pos.getZ() + 0.1);
                 poseStack.scale(0.8F, 0.8F, 0.8F);
-                Minecraft.getInstance().getBlockRenderer().renderSingleBlock(state, poseStack, getter, packedLight, OverlayTexture.pack(anim, 10));
+                var modelState = new net.minecraft.client.renderer.block.BlockModelRenderState();
+                Minecraft.getInstance().getBlockModelResolver().update(modelState, state, DISPLAY_CONTEXT);
+                modelState.submitMultiLayer(poseStack, collector, packedLight, OverlayTexture.pack(anim, 10), 0);
                 poseStack.popPose();
             } else if (!part.isMatch(level, worldPos)) {
                 invalidBlocks.add(pos);
             }
         }
 
-        com.brandon3055.brandonscore.client.render.RenderUtils.endBatch(getter); //Needed to ensure invalid blocks are rendered last.
 
         if (!invalidBlocks.isEmpty()) {
             for (BlockPos pos : invalidBlocks) {
                 poseStack.pushPose();
                 poseStack.translate(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
-                VertexConsumer builder = new TransformingVertexConsumer(getter.getBuffer(outlineType), poseStack);
-                double invalidAnim = Math.sin((TimeKeeper.getClientTick() + partialTicks) / 25D * 3.141593);
-                invalidAnim = Math.max(0.1, Math.abs(invalidAnim));
+                double invalidAnim = Math.max(0.1, Math.abs(Math.sin((TimeKeeper.getClientTick() + partialTicks) / 25D * Math.PI)));
                 Cuboid6 box = new Cuboid6().expand(invalidAnim / 2);
-                RenderUtils.bufferCuboidOutline(builder, box, 1F, 0F, 0F, 1F);
+                collector.order(1).submitCustomGeometry(poseStack, outlineType, (matrix, buffer) -> {
+                    // Lines in 26 carry per-vertex width; the old CCL helper omits it.
+                    int[][] edges = {{0,1},{1,3},{3,2},{2,0},{4,5},{5,7},{7,6},{6,4},{0,4},{1,5},{2,6},{3,7}};
+                    for (int[] edge : edges) {
+                        org.joml.Vector3f[] v = new org.joml.Vector3f[2];
+                        for (int i = 0; i < 2; i++) {
+                            int corner = edge[i];
+                            v[i] = new org.joml.Vector3f((float) ((corner & 1) == 0 ? box.min.x : box.max.x),
+                                    (float) ((corner & 4) == 0 ? box.min.y : box.max.y),
+                                    (float) ((corner & 2) == 0 ? box.min.z : box.max.z));
+                        }
+                        var normal = new org.joml.Vector3f(v[1]).sub(v[0]).normalize();
+                        for (var vertex : v) buffer.addVertex(matrix, vertex).setColor(1F, 0F, 0F, 1F)
+                                .setNormal(matrix, normal).setLineWidth(4F);
+                    }
+                });
                 poseStack.popPose();
             }
         }

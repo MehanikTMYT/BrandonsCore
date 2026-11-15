@@ -83,14 +83,13 @@ public class FilterGroup extends FilterBase {
         return FilterType.FILTER_GROUP;
     }
 
-    @Override
-    public CompoundTag serializeNBT() {
-        CompoundTag compound = super.serializeNBT();
+    public CompoundTag serializeNBT(net.minecraft.core.HolderLookup.Provider registries) {
+        CompoundTag compound = super.serializeNBT(registries);
         compound.putBoolean("and_group", andGroup);
         if (!subNodeMap.isEmpty()) {
             ListTag subs = new ListTag();
             subNodeMap.values().forEach(node -> {
-                CompoundTag tag = node.serializeNBT();
+                CompoundTag tag = node.serializeNBT(registries);
                 tag.putByte("filter_type", (byte) node.getType().index);
                 subs.add(tag);
             });
@@ -99,18 +98,17 @@ public class FilterGroup extends FilterBase {
         return compound;
     }
 
-    @Override
-    public void deserializeNBT(CompoundTag nbt) {
-        super.deserializeNBT(nbt);
-        andGroup = nbt.getBoolean("and_group");
+    public void deserializeNBT(net.minecraft.core.HolderLookup.Provider registries, CompoundTag nbt) {
+        super.deserializeNBT(registries, nbt);
+        andGroup = nbt.getBooleanOr("and_group", false);
         subNodeMap.clear();
         if (nbt.contains("sub_nodes")) {
-            ListTag tagList = nbt.getList("sub_nodes", 10);
+            ListTag tagList = nbt.getListOrEmpty("sub_nodes");
             for (Tag tag : tagList) {
-                FilterType type = FilterType.filterTypeMap[((CompoundTag) tag).getByte("filter_type")];
+                FilterType type = FilterType.filterTypeMap[((CompoundTag) tag).getByteOr("filter_type", (byte) 0)];
                 FilterBase node = type.createNode(getFilter());
                 node.onLoaded(this);
-                node.deserializeNBT((CompoundTag) tag);
+                node.deserializeNBT(registries, (CompoundTag) tag);
                 if (node.nodeID == 0 && !(node instanceof EntityFilter)) {
                     LogHelperBC.warn("EntityFilter: Skipping broken filter node");
                     continue; //Something broke and this node lost its id so it has to go!

@@ -1,12 +1,12 @@
 package com.brandon3055.brandonscore.client.gui.modulargui;
 
-import codechicken.lib.gui.modular.elements.GuiManipulable;
-import codechicken.lib.gui.modular.lib.geometry.GuiParent;
+import com.brandon3055.brandonscore.client.gui.modular.elements.GuiManipulable;
+import com.brandon3055.brandonscore.client.gui.modular.lib.geometry.GuiParent;
 import org.jetbrains.annotations.NotNull;
 
-import static codechicken.lib.gui.modular.lib.geometry.Constraint.dynamic;
-import static codechicken.lib.gui.modular.lib.geometry.GeoParam.LEFT;
-import static codechicken.lib.gui.modular.lib.geometry.GeoParam.TOP;
+import static com.brandon3055.brandonscore.client.gui.modular.lib.geometry.Constraint.dynamic;
+import static com.brandon3055.brandonscore.client.gui.modular.lib.geometry.GeoParam.LEFT;
+import static com.brandon3055.brandonscore.client.gui.modular.lib.geometry.GeoParam.TOP;
 
 /**
  * Created by brandon3055 on 31/05/2024

@@ -41,17 +41,15 @@ public class FilterHostile extends FilterBase {
         return FilterType.HOSTILE;
     }
 
-    @Override
-    public CompoundTag serializeNBT() {
-        CompoundTag compound = super.serializeNBT();
+    public CompoundTag serializeNBT(net.minecraft.core.HolderLookup.Provider registries) {
+        CompoundTag compound = super.serializeNBT(registries);
         compound.putBoolean("include", whitelistHostile);
         return compound;
     }
 
-    @Override
-    public void deserializeNBT(CompoundTag nbt) {
-        super.deserializeNBT(nbt);
-        whitelistHostile = nbt.getBoolean("include");
+    public void deserializeNBT(net.minecraft.core.HolderLookup.Provider registries, CompoundTag nbt) {
+        super.deserializeNBT(registries, nbt);
+        whitelistHostile = nbt.getBooleanOr("include", false);
     }
 
     @Override

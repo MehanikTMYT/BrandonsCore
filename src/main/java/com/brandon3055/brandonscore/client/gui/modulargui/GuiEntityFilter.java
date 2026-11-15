@@ -1,12 +1,12 @@
 package com.brandon3055.brandonscore.client.gui.modulargui;
 
-import codechicken.lib.gui.modular.ModularGuiContainer;
-import codechicken.lib.gui.modular.elements.*;
-import codechicken.lib.gui.modular.lib.BackgroundRender;
-import codechicken.lib.gui.modular.lib.Constraints;
-import codechicken.lib.gui.modular.lib.GuiRender;
-import codechicken.lib.gui.modular.lib.TextState;
-import codechicken.lib.gui.modular.lib.geometry.*;
+import com.brandon3055.brandonscore.client.gui.modular.ModularGuiContainer;
+import com.brandon3055.brandonscore.client.gui.modular.elements.*;
+import com.brandon3055.brandonscore.client.gui.modular.lib.BackgroundRender;
+import com.brandon3055.brandonscore.client.gui.modular.lib.Constraints;
+import com.brandon3055.brandonscore.client.gui.modular.lib.GuiRender;
+import com.brandon3055.brandonscore.client.gui.modular.lib.TextState;
+import com.brandon3055.brandonscore.client.gui.modular.lib.geometry.*;
 import codechicken.lib.math.MathHelper;
 import com.brandon3055.brandonscore.client.BCGuiTextures;
 import com.brandon3055.brandonscore.client.render.RenderUtils;
@@ -17,13 +17,13 @@ import net.covers1624.quack.collection.FastStream;
 import net.covers1624.quack.util.SneakyUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.extensions.IForgeLivingEntity;
-import net.minecraftforge.registries.ForgeRegistries;
+
+import net.minecraft.core.registries.BuiltInRegistries;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
@@ -33,8 +33,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static codechicken.lib.gui.modular.lib.geometry.Constraint.*;
-import static codechicken.lib.gui.modular.lib.geometry.GeoParam.*;
+import static com.brandon3055.brandonscore.client.gui.modular.lib.geometry.Constraint.*;
+import static com.brandon3055.brandonscore.client.gui.modular.lib.geometry.GeoParam.*;
 
 /**
  * Created by brandon3055 on 18/11/19.
@@ -217,14 +217,14 @@ public class GuiEntityFilter extends GuiElement<GuiEntityFilter> {
 
         GuiTextField nameField = new GuiTextField(node)
                 .setTextState(TextState.create(() -> node.getNode().getEntityName(), s -> node.getNode().setEntityName(s)))
-                .setFilter(ResourceLocation::isValidResourceLocation)
-                .setTextColor(() -> ForgeRegistries.ENTITY_TYPES.containsKey(ResourceLocation.tryParse(node.getNode().getEntityName())) ? 0x00FF00 : 0xFF0000)
+                .setFilter(s -> Identifier.tryParse(s) != null)
+                .setTextColor(() -> BuiltInRegistries.ENTITY_TYPE.containsKey(Identifier.tryParse(node.getNode().getEntityName())) ? 0x00FF00 : 0xFF0000)
                 .setTooltip(() -> {
-                    ResourceLocation name = ResourceLocation.tryParse(node.getNode().getEntityName());
-                    if (name == null || !ForgeRegistries.ENTITY_TYPES.containsKey(name)) {
+                    Identifier name = Identifier.tryParse(node.getNode().getEntityName());
+                    if (name == null || !BuiltInRegistries.ENTITY_TYPE.containsKey(name)) {
                         return Collections.singletonList(Component.translatable("mod_gui.brandonscore.entity_filter.entity_type.unknown").withStyle(ChatFormatting.RED));
                     }
-                    EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(name);
+                    EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.getValue(name);
                     return List.of(type.getDescription().copy(), Component.literal(name.getNamespace()).withStyle(ChatFormatting.BLUE, ChatFormatting.ITALIC));
                 })
                 .setMaxLength(1024)
@@ -256,13 +256,13 @@ public class GuiEntityFilter extends GuiElement<GuiEntityFilter> {
 
                         GuiButton button = new GuiButton(bg)
                                 .onPress(() -> {
-                                    node.getNode().setEntityName(String.valueOf(ForgeRegistries.ENTITY_TYPES.getKey(entityType)));
+                                    node.getNode().setEntityName(String.valueOf(BuiltInRegistries.ENTITY_TYPE.getKey(entityType)));
                                     dialog.close();
                                 });
                         Constraints.bind(button, bg);
 
                         GuiEntityRenderer render = new GuiEntityRenderer(bg)
-                                .setEntity(ForgeRegistries.ENTITY_TYPES.getKey(entityType))
+                                .setEntity(BuiltInRegistries.ENTITY_TYPE.getKey(entityType))
                                 .constrain(WIDTH, literal(20))
                                 .constrain(HEIGHT, literal(20));
                         Constraints.placeInside(render, bg, Constraints.LayoutPos.MIDDLE_LEFT, 6, 0);
@@ -278,18 +278,18 @@ public class GuiEntityFilter extends GuiElement<GuiEntityFilter> {
 
             dialog.setSearchStringFunc(entityType -> entityType.getDescription().getString());
             if (entityFilter.isLivingOnly()) {
-                dialog.addItems(ForgeRegistries.ENTITY_TYPES.getValues()
+                dialog.addItems(BuiltInRegistries.ENTITY_TYPE.stream().toList()
                         .stream()
                         .filter(e -> {
                             try {
-                                return e.create(mc().level) instanceof IForgeLivingEntity;
+                                return e.create(mc().level, net.minecraft.world.entity.EntitySpawnReason.LOAD) instanceof net.minecraft.world.entity.LivingEntity;
                             } catch (Throwable ex) {
                                 return false;
                             }
                         })
                         .toList());
             } else {
-                dialog.addItems(ForgeRegistries.ENTITY_TYPES.getValues());
+                dialog.addItems(BuiltInRegistries.ENTITY_TYPE.stream().toList());
             }
         });
     }
@@ -353,12 +353,12 @@ public class GuiEntityFilter extends GuiElement<GuiEntityFilter> {
         GuiTextField tagField = new GuiTextField(node)
                 .setEnabled(() -> node.getNode().isTagMode())
                 .setTextState(TextState.create(() -> node.getNode().getTagString(), s -> node.getNode().setTagString(s)))
-                .setFilter(ResourceLocation::isValidResourceLocation)
-                .setTextColor(() -> ForgeRegistries.ITEMS.tags().getTagNames().anyMatch(e -> e.equals(node.getNode().getTag())) ? 0x00FF00 : 0xFF0000)
+                .setFilter(s -> Identifier.tryParse(s) != null)
+                .setTextColor(() -> BuiltInRegistries.ITEM.getTags().map(net.minecraft.core.HolderSet.Named::key).anyMatch(e -> e.equals(node.getNode().getTag())) ? 0x00FF00 : 0xFF0000)
                 .setTooltipSingle(() -> {
-                    boolean match = ForgeRegistries.ITEMS.tags().getTagNames().anyMatch(e -> e.equals(node.getNode().getTag()));
+                    boolean match = BuiltInRegistries.ITEM.getTags().map(net.minecraft.core.HolderSet.Named::key).anyMatch(e -> e.equals(node.getNode().getTag()));
                     if (match) {
-                        int count = FastStream.of(ForgeRegistries.ITEMS.getValues()).filter(e -> e.builtInRegistryHolder().is(node.getNode().getTag())).count();
+                        int count = FastStream.of(BuiltInRegistries.ITEM.stream().toList()).filter(e -> e.builtInRegistryHolder().is(node.getNode().getTag())).count();
                         return Component.translatable("mod_gui.brandonscore.entity_filter.item.tag_matches", count).withStyle(ChatFormatting.GREEN);
                     } else {
                         return Component.translatable("mod_gui.brandonscore.entity_filter.item.invalid_tag").withStyle(ChatFormatting.RED);
@@ -409,7 +409,7 @@ public class GuiEntityFilter extends GuiElement<GuiEntityFilter> {
                     });
 
             dialog.setSearchStringFunc(tag -> String.valueOf(tag.location()));
-            dialog.addItems(ForgeRegistries.ITEMS.tags().getTagNames().toList());
+            dialog.addItems(BuiltInRegistries.ITEM.getTags().map(net.minecraft.core.HolderSet.Named::key).toList());
             dialog.getList().markDirty();
         });
     }

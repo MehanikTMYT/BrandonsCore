@@ -1,10 +1,10 @@
 package com.brandon3055.brandonscore.client;
 
-import codechicken.lib.gui.modular.sprite.Material;
-import codechicken.lib.gui.modular.sprite.ModAtlasHolder;
+import com.brandon3055.brandonscore.client.gui.modular.sprite.Material;
+import com.brandon3055.brandonscore.client.gui.modular.sprite.ModAtlasHolder;
 import com.brandon3055.brandonscore.BCConfig;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
+import net.minecraft.resources.Identifier;
+import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,8 +27,9 @@ public class BCGuiTextures {
         return ATLAS_HOLDER;
     }
 
-    public static void onResourceReload(RegisterClientReloadListenersEvent event) {
-        event.registerReloadListener(getAtlasHolder());
+    public static void onResourceReload(AddClientReloadListenersEvent event) {
+        getAtlasHolder().init();
+        event.addListener(getAtlasHolder().atlasLocation(), getAtlasHolder());
     }
 
     /**
@@ -52,7 +53,7 @@ public class BCGuiTextures {
     }
 
     public static Material getUncached(String texture) {
-        return new Material(ATLAS_HOLDER.atlasLocation(), new ResourceLocation(MODID, "gui/" + texture), ATLAS_HOLDER::getSprite);
+        return new Material(ATLAS_HOLDER.atlasLocation(), Identifier.fromNamespaceAndPath(MODID, "gui/" + texture), ATLAS_HOLDER::getSprite);
     }
 
     public static Material getThemed(String location) {

@@ -8,7 +8,7 @@
 //import net.minecraft.world.item.Item;
 //import net.minecraft.world.item.ItemStack;
 //import net.minecraft.world.level.block.Block;
-//import net.neoforged.neoforge.registries.ForgeRegistries;
+//import net.minecraft.core.registries.BuiltInRegistries;
 //
 //import javax.annotation.Nonnull;
 //import java.util.Comparator;
@@ -26,7 +26,7 @@
 //    private int cycleRate = 20;
 //    private ItemStack icon;
 //    public int timeOffset = 0;
-//    private List<ResourceLocation> sortOrder = null;
+//    private List<Identifier> sortOrder = null;
 //
 //    public CyclingItemGroup(String label, Supplier<Object[]> iconSupplier) {
 //        super(label);
@@ -39,13 +39,13 @@
 //        this.cycleRate = cycleRate;
 //    }
 //
-//    public CyclingItemGroup(String label, Supplier<Object[]> iconSupplier, List<ResourceLocation> sortOrder) {
+//    public CyclingItemGroup(String label, Supplier<Object[]> iconSupplier, List<Identifier> sortOrder) {
 //        super(label);
 //        this.iconSupplier = iconSupplier;
 //        this.sortOrder = sortOrder;
 //    }
 //
-//    public CyclingItemGroup(String label, int cycleRate, Supplier<Object[]> iconSupplier, List<ResourceLocation> sortOrder) {
+//    public CyclingItemGroup(String label, int cycleRate, Supplier<Object[]> iconSupplier, List<Identifier> sortOrder) {
 //        super(label);
 //        this.iconSupplier = iconSupplier;
 //        this.cycleRate = cycleRate;
@@ -89,7 +89,7 @@
 //            for(Item item : Registry.ITEM) {
 //                item.fillItemCategory(this, sortedItems);
 //            }
-//            sortedItems.sort(Comparator.comparingInt(value -> sortOrder.indexOf(ForgeRegistries.ITEMS.getKey(value.getItem())))); //TODO [FoxMcloud5655]: Can be null?  Need to check.
+//            sortedItems.sort(Comparator.comparingInt(value -> sortOrder.indexOf(BuiltInRegistries.ITEM.getKey(value.getItem())))); //TODO [FoxMcloud5655]: Can be null?  Need to check.
 //            items.addAll(sortedItems);
 //        }
 //        else {

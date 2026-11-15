@@ -10,7 +10,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.common.ForgeHooks;
+
 
 import java.util.LinkedList;
 
@@ -24,7 +24,7 @@ import java.util.LinkedList;
 public class TeleportUtils {
 
     public static Entity teleportEntity(Entity entity, Entity destination) {
-        return teleportEntity(entity, destination.level().dimension(), destination.getX(), destination.getY(), destination.zOld, destination.getYRot(), destination.getXRot());
+        return teleportEntity(entity, destination.level().dimension(), destination.getX(), destination.getY(), destination.getZ(), destination.getYRot(), destination.getXRot());
     }
 
     /**
@@ -41,7 +41,7 @@ public class TeleportUtils {
             return entity;
         }
 
-        MinecraftServer server = entity.getServer();
+        MinecraftServer server = ((ServerLevel) entity.level()).getServer();
         ResourceKey<Level> sourceDim = entity.level().dimension();
 
         if (!entity.isVehicle() && !entity.isPassenger()) {
@@ -81,83 +81,25 @@ public class TeleportUtils {
      * This is the base teleport method that figures out how to handle the teleport and makes it happen!
      */
     private static Entity handleEntityTeleport(Entity entity, MinecraftServer server, ResourceKey<Level> sourceDim, ResourceKey<Level> targetDim, double xCoord, double yCoord, double zCoord, float yaw, float pitch) {
-        if (entity == null || entity.level().isClientSide() || targetDim == null) {
-            return entity;
-        }
-
-        boolean interDimensional = sourceDim != targetDim;
-
-        if (interDimensional && !ForgeHooks.onTravelToDimension(entity, sourceDim)) {
-            return entity;
-        }
-
-        if (interDimensional) {
-            if (entity instanceof ServerPlayer) {
-                return teleportPlayerInterdimentional((ServerPlayer) entity, server, targetDim, xCoord, yCoord, zCoord, yaw, pitch);
-            } else {
-                return teleportEntityInterdimentional(entity, server, targetDim, xCoord, yCoord, zCoord, yaw, pitch);
-            }
-        } else {
-            if (entity instanceof ServerPlayer) {
-                ServerPlayer player = (ServerPlayer) entity;
-                player.connection.teleport(xCoord, yCoord, zCoord, yaw, pitch);
-                player.setYHeadRot(yaw);
-            } else {
-                entity.moveTo(xCoord, yCoord, zCoord, yaw, pitch);
-                entity.setYHeadRot(yaw);
-            }
-        }
-
-        return entity;
+        if (entity == null || entity.level().isClientSide() || targetDim == null) return entity;
+        ServerLevel target = server.getLevel(targetDim);
+        if (target == null || !entity.isAlive()) return entity;
+        // Vanilla TeleportTransition owns dimension hooks, clone/state transfer and player synchronisation.
+        return entity.teleport(new net.minecraft.world.level.portal.TeleportTransition(target,
+                new net.minecraft.world.phys.Vec3(xCoord, yCoord, zCoord), entity.getDeltaMovement(), yaw, pitch,
+                net.minecraft.world.level.portal.TeleportTransition.PLACE_PORTAL_TICKET));
     }
 
     //TODo Make sure this is not broken
     private static Entity teleportEntityInterdimentional(Entity entity, MinecraftServer server, ResourceKey<Level> targetDim, double xCoord, double yCoord, double zCoord, float yaw, float pitch) {
-        ServerLevel targetWorld = server.getLevel(targetDim);
-        if (!entity.isAlive() || targetWorld == null) {
-            return null;
-        }
-
-        Entity movedEntity = entity.changeDimension(targetWorld);
-        if (movedEntity != null) {
-            movedEntity.moveTo(xCoord, yCoord, zCoord, yaw, pitch);
-            return movedEntity;
-        }
-
-        entity.unRide();
-        movedEntity = entity.getType().create(targetWorld);
-        if (movedEntity != null) {
-            movedEntity.restoreFrom(entity);
-            movedEntity.moveTo(xCoord, yCoord, zCoord, yaw, pitch);
-            targetWorld.addDuringTeleport(movedEntity);
-            entity.remove(Entity.RemovalReason.CHANGED_DIMENSION);
-            ((ServerLevel) entity.level()).resetEmptyTime();
-            targetWorld.resetEmptyTime();
-            return movedEntity;
-        }
-
-
-        return entity;
+        return handleEntityTeleport(entity, server, entity.level().dimension(), targetDim, xCoord, yCoord, zCoord, yaw, pitch);
     }
 
     /**
      * This is the black magic responsible for teleporting players between dimensions!
      */
     private static Player teleportPlayerInterdimentional(ServerPlayer player, MinecraftServer server, ResourceKey<Level> targetDim, double xCoord, double yCoord, double zCoord, float yaw, float pitch) {
-        ServerLevel originWorld = player.serverLevel();
-        ServerLevel targetWorld = server.getLevel(targetDim);
-        if (!player.isAlive() || targetWorld == null) {
-            return player;
-        }
-        player.isChangingDimension = true;
-        player.teleportTo(targetWorld, xCoord, yCoord, zCoord, yaw, pitch);
-
-        player.lastSentExp = -1;
-        player.lastSentHealth = -1.0F;
-        player.lastSentFood = -1;
-
-        player.onUpdateAbilities();
-        return player;
+        return (Player) handleEntityTeleport(player, server, player.level().dimension(), targetDim, xCoord, yCoord, zCoord, yaw, pitch);
     }
 
     public static Entity getHighestRidingEntity(Entity mount) {
@@ -219,10 +161,10 @@ public class TeleportUtils {
                 return;
             }
             if (entity.isPassenger()) {
-                entity.moveTo(entity.getX() + offsetX, entity.getY() + offsetY, entity.getZ() + offsetZ, entity.getYRot(), entity.getXRot());
+                entity.snapTo(entity.getX() + offsetX, entity.getY() + offsetY, entity.getZ() + offsetZ, entity.getYRot(), entity.getXRot());
             }
             for (PassengerHelper passenger : passengers) {
-                DelayedTask.run(1, () -> passenger.entity.startRiding(entity, true));
+                DelayedTask.run(1, () -> passenger.entity.startRiding(entity, true, false));
                 passenger.remountRiders();
             }
         }

@@ -21,7 +21,8 @@ repositories {
 }
 
 dependencies {
-    implementation files('../CodeChickenLib/build/libs/codechickenlib-4.7.0+26.1.2-port.1.jar')
+    implementation 'net.covers1624:Quack:0.4.10.130'
+    implementation files('../CodeChickenLib/build/libs/codechickenlib-4.7.0+26.1.2-port.2.jar')
 }
 
 neoForge {
@@ -33,13 +34,31 @@ neoForge {
     }
 }
 
-// Manually ensure minecraft is included? No, this shouldn't be needed with moddev plugin.
-// Let's try to add the runs configuration as in CodeChickenLib, maybe that's what triggers the setup?
+// Explicit dev runs: the mod source set above is part of both launches.
 neoForge {
     runs {
-        configureEach {
-            sourceSet = sourceSets.main
+        server {
+            server()
+            gameDirectory = project.file("run/server")
+            programArgument("--nogui")
+        }
+        client {
+            client()
+            gameDirectory = project.file("run/client")
+            if (project.hasProperty('quickPlay')) {
+                programArguments.addAll('--quickPlaySingleplayer', project.property('quickPlay').toString(), '--width', '1280', '--height', '720')
+            }
         }
     }
 }
-tasks.withType(JavaCompile).configureEach { options.compilerArgs << "-Xmaxerrs" << "1000" }
+
+processResources {
+    def values = [mod_version: project.version, loader_version_range: loader_version_range,
+        neo_version_range: neo_version_range, minecraft_version_range: minecraft_version_range]
+    inputs.properties(values)
+    filesMatching('META-INF/neoforge.mods.toml') { expand(values) }
+}
+jar {
+    manifest { attributes('MixinConfigs': 'mixins.brandonscore.json', 'Implementation-Version': project.version) }
+    from('LICENSE.md', 'LICENSE-CCL', 'CCL-GUI-NOTICE.md')
+}

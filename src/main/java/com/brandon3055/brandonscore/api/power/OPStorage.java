@@ -2,7 +2,6 @@ package com.brandon3055.brandonscore.api.power;
 
 import codechicken.lib.data.MCDataInput;
 import codechicken.lib.data.MCDataOutput;
-import com.brandon3055.brandonscore.capability.CapabilityOP;
 import com.brandon3055.brandonscore.lib.IMCDataSerializable;
 import com.brandon3055.brandonscore.lib.IValueHashable;
 import net.minecraft.nbt.CompoundTag;
@@ -19,10 +18,10 @@ import javax.annotation.Nullable;
  * Operational Potential is the power system used by Draconic Evolution and related mods.
  * This system is an extension of Forge Energy that allows long based power transfer and storage.
  * <p>
- * When implementing this capability cap should be provided as both {@link net.neoforged.neoforge.energy.CapabilityEnergy#ENERGY} and {@link CapabilityOP#OP}
+ * When implementing this capability cap should be provided as both {@code net.neoforged.neoforge.energy.CapabilityEnergy#ENERGY} and {@code com.brandon3055.brandonscore.capability.CapabilityOP#OP}
  * So any mod that implements FE will find the FE cap and interact with it normally. However any mod that implements OP will fist check for the OP cap before falling back to RF.
  */
-public class OPStorage implements BCSerializable<CompoundTag>, IValueHashable<OPStorage.ComparableValue>, IMCDataSerializable, IOPStorage {
+public class OPStorage implements BCSerializable<CompoundTag>, IValueHashable<OPStorage.ComparableValue>, IMCDataSerializable, IOPStorage, net.neoforged.neoforge.transfer.energy.EnergyHandler {
     protected Runnable changeListener;
     protected long energy;
     protected long capacity;
@@ -31,6 +30,72 @@ public class OPStorage implements BCSerializable<CompoundTag>, IValueHashable<OP
     protected IOTracker ioTracker;
     protected boolean allowExtract = true;
     protected boolean allowReceive = true;
+
+    // Transactional FE access shares this journal across every capability query.
+    private long transactionalInput;
+    private long transactionalOutput;
+    private record TransferState(long energy, long input, long output) {}
+    private final net.neoforged.neoforge.transfer.transaction.SnapshotJournal<TransferState> transferJournal =
+            new net.neoforged.neoforge.transfer.transaction.SnapshotJournal<>() {
+        @Override
+        protected TransferState createSnapshot() {
+            return new TransferState(energy, transactionalInput, transactionalOutput);
+        }
+
+        @Override
+        protected void revertToSnapshot(TransferState state) {
+            energy = state.energy();
+            transactionalInput = state.input();
+            transactionalOutput = state.output();
+        }
+
+        @Override
+        protected void onRootCommit(TransferState original) {
+            long input = transactionalInput;
+            long output = transactionalOutput;
+            transactionalInput = 0;
+            transactionalOutput = 0;
+            if (ioTracker != null) {
+                ioTracker.energyInserted(input);
+                ioTracker.energyExtracted(output);
+            }
+            if (input != 0 || output != 0) markDirty();
+        }
+    };
+
+    @Override
+    public long getAmountAsLong() {
+        return getOPStored();
+    }
+
+    @Override
+    public long getCapacityAsLong() {
+        return getMaxOPStored();
+    }
+
+    @Override
+    public int insert(int amount, net.neoforged.neoforge.transfer.transaction.TransactionContext transaction) {
+        if (amount < 0) throw new IllegalArgumentException("Negative energy insertion");
+        int inserted = (int) Math.max(0, Math.min(amount, receiveOP(amount, true)));
+        if (inserted != 0) {
+            transferJournal.updateSnapshots(transaction);
+            energy += inserted;
+            transactionalInput += Math.min(Long.MAX_VALUE - transactionalInput, inserted);
+        }
+        return inserted;
+    }
+
+    @Override
+    public int extract(int amount, net.neoforged.neoforge.transfer.transaction.TransactionContext transaction) {
+        if (amount < 0) throw new IllegalArgumentException("Negative energy extraction");
+        int extracted = (int) Math.max(0, Math.min(amount, extractOP(amount, true)));
+        if (extracted != 0) {
+            transferJournal.updateSnapshots(transaction);
+            energy -= extracted;
+            transactionalOutput += Math.min(Long.MAX_VALUE - transactionalOutput, extracted);
+        }
+        return extracted;
+    }
 
     public OPStorage(long capacity) {
         this(capacity, capacity);
@@ -236,7 +301,7 @@ public class OPStorage implements BCSerializable<CompoundTag>, IValueHashable<OP
     private long smartRead(String name, CompoundTag compound) {
         Tag tag = compound.get(name);
         if (tag instanceof NumericTag) {
-            return ((NumericTag) tag).getAsLong();
+            return ((NumericTag) tag).longValue();
         }
         return 0;
     }

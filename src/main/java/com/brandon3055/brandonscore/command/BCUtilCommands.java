@@ -26,13 +26,13 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
-import net.minecraft.commands.CommandRuntimeException;
+import net.minecraft.util.Util;
+
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.commands.arguments.ResourceLocationArgument;
+import net.minecraft.commands.arguments.IdentifierArgument;
 import net.minecraft.commands.arguments.blocks.BlockStateArgument;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.commands.arguments.coordinates.RotationArgument;
@@ -47,7 +47,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.players.GameProfileCache;
+import net.minecraft.server.players.UserNameToIdResolver;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
@@ -65,11 +65,11 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.MinecraftForge;
-import net.neoforged.eventbus.EventBus;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.bus.EventBus;
 import net.neoforged.bus.api.Event;
 import net.neoforged.bus.api.EventPriority;
-import net.neoforged.bus.api.IEventListener;
+import net.neoforged.bus.api.EventListener;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.util.ObfuscationReflectionHelper;
 import org.apache.commons.io.IOUtils;
@@ -82,7 +82,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import static net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT;
+
 
 ;
 
@@ -117,7 +117,7 @@ public class BCUtilCommands {
 
     private static ArgumentBuilder<CommandSourceStack, ?> registerTileDebug() {
         return Commands.literal("debug_tile")
-                .requires(cs -> cs.hasPermission(3))
+                .requires(net.minecraft.commands.Commands.hasPermission(net.minecraft.commands.Commands.LEVEL_ADMINS))
                 .then(Commands.argument("pos", BlockPosArgument.blockPos())
                         .executes(context -> {
                             BlockPos pos = BlockPosArgument.getLoadedBlockPos(context, "pos");
@@ -127,11 +127,11 @@ public class BCUtilCommands {
                             }
                             return 0;
                         })
-                        .then(Commands.argument("multiblock", ResourceLocationArgument.id())
+                        .then(Commands.argument("multiblock", IdentifierArgument.id())
                                 .suggests((context, builder) -> SharedSuggestionProvider.suggestResource(MultiBlockManager.getRegisteredIds(), builder))
-                                .executes(context -> MultiBlockManager.placeCommand(context.getSource().getLevel(), BlockPosArgument.getLoadedBlockPos(context, "pos"), ResourceLocationArgument.getId(context, "multiblock"), Vec3.ZERO))
+                                .executes(context -> MultiBlockManager.placeCommand(context.getSource().getLevel(), BlockPosArgument.getLoadedBlockPos(context, "pos"), IdentifierArgument.getId(context, "multiblock"), Vec3.ZERO))
                                 .then(Commands.argument("rotation", Vec3Argument.vec3(false))
-                                        .executes(context -> MultiBlockManager.placeCommand(context.getSource().getLevel(), BlockPosArgument.getLoadedBlockPos(context, "pos"), ResourceLocationArgument.getId(context, "multiblock"), Vec3Argument.getVec3(context, "rotation")))
+                                        .executes(context -> MultiBlockManager.placeCommand(context.getSource().getLevel(), BlockPosArgument.getLoadedBlockPos(context, "pos"), IdentifierArgument.getId(context, "multiblock"), Vec3Argument.getVec3(context, "rotation")))
                                 )
                         )
                 );
@@ -139,7 +139,7 @@ public class BCUtilCommands {
 
     private static ArgumentBuilder<CommandSourceStack, ?> reloadContributors() {
         return Commands.literal("reset_contrib_handler")
-                .requires(cs -> cs.hasPermission(3))
+                .requires(net.minecraft.commands.Commands.hasPermission(net.minecraft.commands.Commands.LEVEL_ADMINS))
                 .executes(context -> {
                     ContributorHandler.reload();
                     context.getSource().sendSuccess(() -> Component.literal("Reset complete"), false);
@@ -149,13 +149,13 @@ public class BCUtilCommands {
 
     private static ArgumentBuilder<CommandSourceStack, ?> registerPlaceMultiBlock() {
         return Commands.literal("place_multiblock")
-                .requires(cs -> cs.hasPermission(3))
+                .requires(net.minecraft.commands.Commands.hasPermission(net.minecraft.commands.Commands.LEVEL_ADMINS))
                 .then(Commands.argument("pos", BlockPosArgument.blockPos())
-                        .then(Commands.argument("multiblock", ResourceLocationArgument.id())
+                        .then(Commands.argument("multiblock", IdentifierArgument.id())
                                 .suggests((context, builder) -> SharedSuggestionProvider.suggestResource(MultiBlockManager.getRegisteredIds(), builder))
-                                .executes(context -> MultiBlockManager.placeCommand(context.getSource().getLevel(), BlockPosArgument.getLoadedBlockPos(context, "pos"), ResourceLocationArgument.getId(context, "multiblock"), Vec3.ZERO))
+                                .executes(context -> MultiBlockManager.placeCommand(context.getSource().getLevel(), BlockPosArgument.getLoadedBlockPos(context, "pos"), IdentifierArgument.getId(context, "multiblock"), Vec3.ZERO))
                                 .then(Commands.argument("rotation", Vec3Argument.vec3(false))
-                                        .executes(context -> MultiBlockManager.placeCommand(context.getSource().getLevel(), BlockPosArgument.getLoadedBlockPos(context, "pos"), ResourceLocationArgument.getId(context, "multiblock"), Vec3Argument.getVec3(context, "rotation")))
+                                        .executes(context -> MultiBlockManager.placeCommand(context.getSource().getLevel(), BlockPosArgument.getLoadedBlockPos(context, "pos"), IdentifierArgument.getId(context, "multiblock"), Vec3Argument.getVec3(context, "rotation")))
                                 )
                         )
                 );
@@ -164,21 +164,21 @@ public class BCUtilCommands {
 
     private static ArgumentBuilder<CommandSourceStack, ?> registerNBT() {
         return Commands.literal("nbt")
-                .requires(cs -> cs.hasPermission(0))
+                .requires(net.minecraft.commands.Commands.hasPermission(net.minecraft.commands.Commands.LEVEL_ALL))
                 .executes(context -> functionNBT(context.getSource()));
     }
 
     private static ArgumentBuilder<CommandSourceStack, ?> registerStackString() {
         return Commands.literal("stack_string")
                 .then(Commands.literal("from_string")
-                        .requires(cs -> cs.hasPermission(2))
+                        .requires(net.minecraft.commands.Commands.hasPermission(net.minecraft.commands.Commands.LEVEL_GAMEMASTERS))
                         .then(Commands.argument("give-to", EntityArgument.player())
                                 .then(Commands.argument("stack-string", StringArgumentType.greedyString())
                                         .executes(ctx -> functionFromStackString(ctx.getSource(), EntityArgument.getPlayer(ctx, "give-to"), StringArgumentType.getString(ctx, "stack-string")))
                                 )))
 
                 .then(Commands.literal("to_string")
-                        .requires(cs -> cs.hasPermission(0))
+                        .requires(net.minecraft.commands.Commands.hasPermission(net.minecraft.commands.Commands.LEVEL_ALL))
                         .then(Commands.literal("id_only")
                                 .executes(context -> functionToStackString(context.getSource(), false, false, false)))
                         .then(Commands.literal("id_nbt")
@@ -195,7 +195,7 @@ public class BCUtilCommands {
 
     private static ArgumentBuilder<CommandSourceStack, ?> registerRegenChunk() {
         return Commands.literal("regenchunk")
-                .requires(cs -> cs.hasPermission(3))
+                .requires(net.minecraft.commands.Commands.hasPermission(net.minecraft.commands.Commands.LEVEL_ADMINS))
                 .then(Commands.argument("radius", IntegerArgumentType.integer(1, 32))
                         .executes(ctx -> regenChunk(ctx.getSource(), IntegerArgumentType.getInteger(ctx, "radius")))
                 );
@@ -203,13 +203,13 @@ public class BCUtilCommands {
 
     private static ArgumentBuilder<CommandSourceStack, ?> registerNoClip() {
         return Commands.literal("noclip")
-                .requires(cs -> cs.hasPermission(3))
+                .requires(net.minecraft.commands.Commands.hasPermission(net.minecraft.commands.Commands.LEVEL_ADMINS))
                 .executes(context -> toggleNoClip(context.getSource()));
     }
 
     private static ArgumentBuilder<CommandSourceStack, ?> registerUUID() {
         return Commands.literal("uuid")
-                .requires(cs -> cs.hasPermission(0))
+                .requires(net.minecraft.commands.Commands.hasPermission(net.minecraft.commands.Commands.LEVEL_ALL))
                 .then(Commands.argument("target", EntityArgument.player())
                         .executes(ctx -> getUUID(ctx.getSource(), EntityArgument.getPlayer(ctx, "target")))
                 )
@@ -218,9 +218,9 @@ public class BCUtilCommands {
 
     private static ArgumentBuilder<CommandSourceStack, ?> registerPlayerAccess() {
         return Commands.literal("player_access")
-                .requires(cs -> cs.hasPermission(3))
+                .requires(net.minecraft.commands.Commands.hasPermission(net.minecraft.commands.Commands.LEVEL_ADMINS))
                 .then(Commands.argument("target", reader -> StringArgumentType.string())
-                        .suggests((context, builder) -> SharedSuggestionProvider.suggest(accessiblePlayers(context.getSource()).values().stream().map(GameProfile::getName), builder))
+                        .suggests((context, builder) -> SharedSuggestionProvider.suggest(accessiblePlayers(context.getSource()).values().stream().map(GameProfile::name), builder))
                         .executes(context -> playerAccess(context.getSource(), context.getArgument("target", String.class)))
                 )
                 .then(Commands.literal("list")
@@ -230,13 +230,13 @@ public class BCUtilCommands {
 
     private static ArgumentBuilder<CommandSourceStack, ?> registerDumpEvents() {
         return Commands.literal("dump_event_listeners")
-                .requires(cs -> cs.hasPermission(0))
+                .requires(net.minecraft.commands.Commands.hasPermission(net.minecraft.commands.Commands.LEVEL_ALL))
                 .executes(ctx -> dumpEventListeners(ctx.getSource()));
     }
 
     private static ArgumentBuilder<CommandSourceStack, ?> registerEggify() {
         return Commands.literal("eggify")
-                .requires(cs -> cs.hasPermission(3))
+                .requires(net.minecraft.commands.Commands.hasPermission(net.minecraft.commands.Commands.LEVEL_ADMINS))
                 .then(Commands.argument("target", EntityArgument.entities())
                         .executes(ctx -> eggify(ctx, EntityArgument.getEntity(ctx, "target"))));
     }
@@ -255,16 +255,16 @@ public class BCUtilCommands {
 ////        ChatHelper.message(sender, "-", TextFormatting.GRAY);
 //    }
 
-    private static int functionNBT(CommandSourceStack source) throws CommandRuntimeException, CommandSyntaxException {
+    private static int functionNBT(CommandSourceStack source) throws CommandSyntaxException {
         Player player = source.getPlayerOrException();
         ItemStack stack = HandHelper.getMainFirst(player);
         if (stack.isEmpty()) {
-            throw new CommandRuntimeException(Component.literal("You are not holding an item!"));
-        } else if (!stack.hasTag()) {
-            throw new CommandRuntimeException(Component.literal("That stack has no NBT tag!"));
+            throw new com.mojang.brigadier.exceptions.SimpleCommandExceptionType(Component.literal("You are not holding an item!")).create();
+        } else if (!stack.has(net.minecraft.core.component.DataComponents.CUSTOM_DATA)) {
+            throw new com.mojang.brigadier.exceptions.SimpleCommandExceptionType(Component.literal("That stack has no NBT tag!")).create();
         }
 
-        CompoundTag compound = stack.getTag();
+        CompoundTag compound = com.brandon3055.brandonscore.utils.ItemNBTHelper.getCompound(stack);
         LogHelperBC.logNBT(compound);
         LogHelperBC.info(compound);
         StringBuilder builder = new StringBuilder();
@@ -274,26 +274,26 @@ public class BCUtilCommands {
         return 0;
     }
 
-    private static int functionToStackString(CommandSourceStack source, boolean count, boolean nbt, boolean caps) throws CommandRuntimeException, CommandSyntaxException {
+    private static int functionToStackString(CommandSourceStack source, boolean count, boolean nbt, boolean caps) throws CommandSyntaxException {
         Player player = source.getPlayerOrException();
         ItemStack stack = HandHelper.getMainFirst(player);
         if (stack.isEmpty()) {
-            throw new CommandRuntimeException(Component.literal("You are not holding an item!"));
+            throw new com.mojang.brigadier.exceptions.SimpleCommandExceptionType(Component.literal("You are not holding an item!")).create();
         }
 
-        String returnString = StringyStacks.toString(stack, nbt, count, caps);
+        String returnString = StringyStacks.toString(source.registryAccess(), stack, nbt, count, caps);
         ChatHelper.sendMessage(player, Component.literal("# The following is stack string for the held stack (click to copy) #").withStyle(ChatFormatting.BLUE));
         MutableComponent textComponent = returnString.length() > 64 ? Component.literal(returnString.substring(0, 64) + "... ").withStyle(ChatFormatting.GOLD).append(Component.literal("(Mouseover for full)").withStyle(ChatFormatting.DARK_AQUA).withStyle(ChatFormatting.UNDERLINE)) : Component.literal(returnString).withStyle(ChatFormatting.GOLD);
-        textComponent.setStyle(textComponent.getStyle().withHoverEvent(new HoverEvent(SHOW_TEXT, Component.literal("Click to copy to clipboard").withStyle(ChatFormatting.BLUE).append(Component.literal("\n" + returnString).withStyle(ChatFormatting.GRAY)))).withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, returnString)));
+        textComponent.setStyle(textComponent.getStyle().withHoverEvent(new HoverEvent.ShowText(Component.literal("Click to copy to clipboard").withStyle(ChatFormatting.BLUE).append(Component.literal("\n" + returnString).withStyle(ChatFormatting.GRAY)))).withClickEvent(new ClickEvent.CopyToClipboard(returnString)));
         ChatHelper.sendMessage(player, textComponent);
         StringyStacks.LOGGER.info(returnString);
         return 0;
     }
 
-    private static int functionFromStackString(CommandSourceStack source, ServerPlayer player, String stackString) throws CommandRuntimeException, CommandSyntaxException {
-        ItemStack stack = StringyStacks.fromString(stackString, null);
+    private static int functionFromStackString(CommandSourceStack source, ServerPlayer player, String stackString) throws CommandSyntaxException {
+        ItemStack stack = StringyStacks.fromString(source.registryAccess(), stackString, null);
         if (stack == null) {
-            throw new CommandRuntimeException(Component.literal("Invalid item string. You may find more details in the server console."));
+            throw new com.mojang.brigadier.exceptions.SimpleCommandExceptionType(Component.literal("Invalid item string. You may find more details in the server console.")).create();
         }
 
         boolean flag = player.getInventory().add(stack);
@@ -305,13 +305,13 @@ public class BCUtilCommands {
             ItemEntity itementity = player.drop(stack, false);
             if (itementity != null) {
                 itementity.setNoPickUpDelay();
-                itementity.setThrower(player.getUUID());
+                itementity.setThrower(player);
             }
         }
         return 0;
     }
 
-    private static int regenChunk(CommandSourceStack source, int rad) throws CommandRuntimeException, CommandSyntaxException {
+    private static int regenChunk(CommandSourceStack source, int rad) throws CommandSyntaxException {
 //        LogHelperBC.dev(rad);
 
         for (int xOffset = -rad; xOffset <= rad; xOffset++) {
@@ -366,7 +366,7 @@ public class BCUtilCommands {
         return 0;
     }
 
-    private static int toggleNoClip(CommandSourceStack source) throws CommandRuntimeException, CommandSyntaxException {
+    private static int toggleNoClip(CommandSourceStack source) throws CommandSyntaxException {
         ServerPlayer player = source.getPlayerOrException();
         boolean enabled = BCEventHandler.noClipPlayers.contains(player.getUUID());
 
@@ -382,17 +382,17 @@ public class BCUtilCommands {
         return 0;
     }
 
-    private static int getUUID(CommandSourceStack source, ServerPlayer player) throws CommandRuntimeException {
+    private static int getUUID(CommandSourceStack source, ServerPlayer player) throws CommandSyntaxException {
         MutableComponent comp = Component.literal(player.getName().getString() + "'s UUID: " + ChatFormatting.UNDERLINE + player.getUUID());
-        comp.setStyle(comp.getStyle().withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, player.getUUID().toString())));
-        comp.setStyle(comp.getStyle().withHoverEvent(new HoverEvent(SHOW_TEXT, Component.literal("Click to copy to clipboard"))));
+        comp.setStyle(comp.getStyle().withClickEvent(new ClickEvent.CopyToClipboard(player.getUUID().toString())));
+        comp.setStyle(comp.getStyle().withHoverEvent(new HoverEvent.ShowText(Component.literal("Click to copy to clipboard"))));
         source.sendSuccess(() -> comp, true);
         return 0;
     }
 
     //region Dump Event Handlers
 
-    public static int dumpEventListeners(CommandSourceStack source) throws CommandRuntimeException {
+    public static int dumpEventListeners(CommandSourceStack source) throws CommandSyntaxException {
         Map<String, Map<Class<?>, List<Pair<EventPriority, Method>>>> eventListenerMap = new HashMap<>();
         dumpBus("EVENT_BUS", (EventBus) net.neoforged.neoforge.common.NeoForge.EVENT_BUS, eventListenerMap);
 //        dumpBus("ORE_GEN_BUS", MinecraftForge.ORE_GEN_BUS, eventListenerMap);
@@ -432,13 +432,13 @@ public class BCUtilCommands {
         return sb.toString();
     }
 
-    private static void dumpBus(String name, EventBus bus, Map<String, Map<Class<?>, List<Pair<EventPriority, Method>>>> baseMap) throws CommandRuntimeException {
+    private static void dumpBus(String name, EventBus bus, Map<String, Map<Class<?>, List<Pair<EventPriority, Method>>>> baseMap) throws CommandSyntaxException {
         Map<Class<?>, List<Pair<EventPriority, Method>>> map = baseMap.computeIfAbsent(name, eventBus -> new HashMap<>());
 
         try {
-            ConcurrentHashMap<Object, ArrayList<IEventListener>> listeners = ObfuscationReflectionHelper.getPrivateValue(EventBus.class, bus, "listeners");
+            ConcurrentHashMap<Object, List<EventListener>> listeners = ObfuscationReflectionHelper.getPrivateValue(EventBus.class, bus, "listeners");
             for (Object obj : listeners.keySet()) {
-                for (Method method : obj.getClass().getMethods()) {
+                for (Method method : (obj instanceof Class<?> type ? type : obj.getClass()).getMethods()) {
                     SubscribeEvent anno;
                     if ((anno = method.getAnnotation(SubscribeEvent.class)) != null) {
                         for (Class<?> parameter : method.getParameterTypes()) {
@@ -451,13 +451,13 @@ public class BCUtilCommands {
             }
         } catch (Throwable e) {
             e.printStackTrace();
-            throw new CommandRuntimeException(Component.literal(e.getMessage()));
+            throw new com.mojang.brigadier.exceptions.SimpleCommandExceptionType(Component.literal(e.getMessage())).create();
         }
     }
 
     //endregion
 
-    private static int eggify(CommandContext<CommandSourceStack> ctx, Entity target) throws CommandRuntimeException, CommandSyntaxException {
+    private static int eggify(CommandContext<CommandSourceStack> ctx, Entity target) throws CommandSyntaxException {
         ServerPlayer player = ctx.getSource().getPlayerOrException();
         Entity entity = target;
 
@@ -466,10 +466,15 @@ public class BCUtilCommands {
             return 1;
         }
 
-        ItemStack spawnEgg = new ItemStack(SpawnEggItem.byId(entity.getType()));
-        CompoundTag data = entity.serializeNBT();
+        ItemStack spawnEgg = SpawnEggItem.byId(entity.getType()).map(ItemStack::new).orElse(ItemStack.EMPTY);
+        if (spawnEgg.isEmpty()) throw new com.mojang.brigadier.exceptions.SimpleCommandExceptionType(
+                Component.literal("This entity has no registered spawn egg")).create();
+        var output = net.minecraft.world.level.storage.TagValueOutput.createWithContext(
+                net.minecraft.util.ProblemReporter.DISCARDING, player.registryAccess());
+        entity.saveWithoutId(output);
+        CompoundTag data = output.buildResult();
 //        data.putString("id", String.valueOf(EntityList.getKey(entity)));
-        spawnEgg.addTagElement("EntityTag", data);
+
 
         data.remove("Pos");
         data.remove("Motion");
@@ -483,6 +488,8 @@ public class BCUtilCommands {
         data.remove("PortalCooldown");
         data.remove("UUID");
 
+        spawnEgg.set(net.minecraft.core.component.DataComponents.ENTITY_DATA,
+                net.minecraft.world.item.component.TypedEntityData.of(entity.getType(), data));
         InventoryUtils.givePlayerStack(player, spawnEgg);
         return 0;
     }
@@ -519,7 +526,7 @@ public class BCUtilCommands {
 
     //region Player Access Command
 
-    private static Map<UUID, GameProfile> accessiblePlayers(CommandSourceStack source) throws CommandRuntimeException {
+    private static Map<UUID, GameProfile> accessiblePlayers(CommandSourceStack source) throws CommandSyntaxException {
 //        PlayerProfileCache cache = source.getServer().getPlayerProfileCache();
 //
 //        File playersFolder = new File(source.getServer().getWorld(World.OVERWORLD).getSaveHandler().getWorldDirectory(), "playerdata");
@@ -548,8 +555,8 @@ public class BCUtilCommands {
     }
 
 
-    private static int playerAccess(CommandSourceStack source, String target) throws CommandRuntimeException, CommandSyntaxException {
-        GameProfileCache cache = source.getServer().getProfileCache();
+    private static int playerAccess(CommandSourceStack source, String target) throws CommandSyntaxException {
+        UserNameToIdResolver cache = source.getServer().services().nameToIdCache();
 //
 //        File playersFolder = new File(source.getServer().getWorld(DimensionType.OVERWORLD).getSaveHandler().getWorldDirectory(), "playerdata");
 //        File[] playerArray = playersFolder.listFiles((dir, name) -> name.endsWith(".dat"));
@@ -581,15 +588,15 @@ public class BCUtilCommands {
 
                 boolean online = false;
                 for (Player player : source.getServer().getPlayerList().getPlayers()) {
-                    if (player.getGameProfile().getId().equals(uuid)) {
+                    if (player.getGameProfile().id().equals(uuid)) {
                         online = true;
                         break;
                     }
                 }
 
-                MutableComponent message = Component.literal((online ? ChatFormatting.GREEN + "[Online]: " : ChatFormatting.GRAY + "[Offline]: ") + profile.getName());
+                MutableComponent message = Component.literal((online ? ChatFormatting.GREEN + "[Online]: " : ChatFormatting.GRAY + "[Offline]: ") + profile.name());
 
-                boolean offline = UUID.nameUUIDFromBytes(("OfflinePlayer:" + profile.getName()).getBytes(Charsets.UTF_8)).equals(uuid);
+                boolean offline = UUID.nameUUIDFromBytes(("OfflinePlayer:" + profile.name()).getBytes(Charsets.UTF_8)).equals(uuid);
                 if (offline) {
                     message.append(Component.literal(" (Offline Account)").withStyle(ChatFormatting.RED));
                 }
@@ -599,8 +606,8 @@ public class BCUtilCommands {
                         .append(Component.literal(ChatFormatting.GOLD + "-Click to access player."));
 
                 Style msgStyle = Style.EMPTY;
-                msgStyle.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/bcore_util player_access " + uuid));
-                msgStyle.withHoverEvent(new HoverEvent(SHOW_TEXT, messageHover));
+                msgStyle.withClickEvent(new ClickEvent.SuggestCommand("/bcore_util player_access " + uuid));
+                msgStyle.withHoverEvent(new HoverEvent.ShowText(messageHover));
                 message.setStyle(msgStyle);
                 source.sendSuccess(() -> message, false);
             }
@@ -608,10 +615,10 @@ public class BCUtilCommands {
         }
         target = target.toLowerCase(Locale.ENGLISH);
 
-        GameProfile profile = null;
+        net.minecraft.server.players.NameAndId profile = null;
         if (cache.get(target).isPresent()) {
             profile = cache.get(target).get();
-            target = profile.getId().toString();
+            target = profile.id().toString();
         } else {
             try {
                 profile = cache.get(UUID.fromString(target)).orElse(null);
@@ -619,26 +626,26 @@ public class BCUtilCommands {
             }
 
             if (profile == null) {
-                throw new CommandRuntimeException(Component.literal("Could not find the specified player name or uuid!"));
+                throw new com.mojang.brigadier.exceptions.SimpleCommandExceptionType(Component.literal("Could not find the specified player name or uuid!")).create();
             }
         }
 
         //Access Player
         ServerPlayer playerSender = source.getPlayerOrException();
-        Player targetPlayer = source.getServer().getPlayerList().getPlayer(profile.getId());
+        Player targetPlayer = source.getServer().getPlayerList().getPlayer(profile.id());
         if (targetPlayer == null) {
             File playerFile = getPlayerFile(source.getServer(), target);
 //            targetPlayer = new OfflinePlayer(playerSender, source.getServer().getWorld(World.OVERWORLD), profile, playerFile);
         }
 
         if (playerSender == targetPlayer) {
-            throw new CommandRuntimeException(Component.literal("This command only works on other players!"));
+            throw new com.mojang.brigadier.exceptions.SimpleCommandExceptionType(Component.literal("This command only works on other players!")).create();
         }
         openPlayerAccessUI(source.getServer(), playerSender, targetPlayer);
         return 0;
     }
 
-    public static File getPlayerFile(MinecraftServer server, String uuid) throws CommandRuntimeException {
+    public static File getPlayerFile(MinecraftServer server, String uuid) throws CommandSyntaxException {
 //        File playerFolder = new File(server.getWorld(World.OVERWORLD).getSaveHandler().getWorldDirectory(), "playerdata");
 //        File[] playerArray = playerFolder.listFiles();
 //        if (playerArray == null) {
@@ -651,10 +658,10 @@ public class BCUtilCommands {
 //            }
 //        }
 
-        throw new CommandRuntimeException(Component.literal("Could not find a data file for the specified player!"));
+        throw new com.mojang.brigadier.exceptions.SimpleCommandExceptionType(Component.literal("Could not find a data file for the specified player!")).create();
     }
 
-    public static CompoundTag readPlayerCompound(File playerData) throws CommandRuntimeException {
+    public static CompoundTag readPlayerCompound(File playerData) throws CommandSyntaxException {
         DataInputStream is = null;
         try {
             is = new DataInputStream(new GZIPInputStream(new FileInputStream(playerData)));
@@ -663,7 +670,7 @@ public class BCUtilCommands {
             return compound;
         } catch (Exception e) {
             e.printStackTrace();
-            throw new CommandRuntimeException(Component.literal(e.toString()));
+            throw new com.mojang.brigadier.exceptions.SimpleCommandExceptionType(Component.literal(e.toString())).create();
         } finally {
             IOUtils.closeQuietly(is);
         }
@@ -684,12 +691,7 @@ public class BCUtilCommands {
     }
 
     public static void openPlayerAccessUI(MinecraftServer server, ServerPlayer player, Player playerAccess) {
-        player.nextContainerCounter();
-        player.doCloseContainer();
-        int windowId = player.containerCounter;
-        BCoreNetwork.sendOpenPlayerAccessUI(player, windowId);
-        BCoreNetwork.sendPlayerAccessUIUpdate(player, playerAccess);
-        player.openMenu(new MenuProvider() {
+        var opened = player.openMenu(new MenuProvider() {
             @Override
             public Component getDisplayName() {
                 return Component.literal("Player Access");
@@ -705,7 +707,10 @@ public class BCUtilCommands {
 //        player.openContainer = new ContainerPlayerAccess(player, playerAccess, server);
 //        player.openContainer.windowId = windowId;
 //        player.openContainer.addListener(player);
-        net.neoforged.neoforge.common.net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(new net.neoforged.event.entity.player.PlayerContainerEvent.Open(player, player.containerMenu));
+        opened.ifPresent(windowId -> {
+            BCoreNetwork.sendOpenPlayerAccessUI(player, windowId);
+            BCoreNetwork.sendPlayerAccessUIUpdate(player, playerAccess);
+        });
     }
 
 //    public static class OfflinePlayer extends PlayerEntity {
@@ -769,7 +774,7 @@ public class BCUtilCommands {
 
     private static ArgumentBuilder<CommandSourceStack, ?> registerDev1() {
         return Commands.literal("dev1")
-                .requires(cs -> cs.hasPermission(3))
+                .requires(net.minecraft.commands.Commands.hasPermission(net.minecraft.commands.Commands.LEVEL_ADMINS))
                 .executes(ctx -> {
                     ServerLevel level = ctx.getSource().getLevel();
                     ServerPlayer player = ctx.getSource().getPlayerOrException();
@@ -791,7 +796,7 @@ public class BCUtilCommands {
 
     private static ArgumentBuilder<CommandSourceStack, ?> registerDev2() {
         return Commands.literal("dev2")
-                .requires(cs -> cs.hasPermission(3))
+                .requires(net.minecraft.commands.Commands.hasPermission(net.minecraft.commands.Commands.LEVEL_ADMINS))
                 .executes(ctx -> {
                     ServerLevel level = ctx.getSource().getLevel();
                     ServerPlayer player = ctx.getSource().getPlayerOrException();

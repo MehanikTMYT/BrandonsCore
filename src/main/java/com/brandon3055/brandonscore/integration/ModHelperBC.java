@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import net.covers1624.quack.util.CrashLock;
 import net.neoforged.fml.ModList;
-import net.neoforged.forgespi.language.IModInfo;
 
 import java.util.*;
 
@@ -28,7 +27,7 @@ public class ModHelperBC {
         modNameMap = Collections.synchronizedMap(new HashMap<>());
         modVersionMap = Collections.synchronizedMap(new HashMap<>());
 
-        for (IModInfo mod : ModList.get().getMods()) {
+        for (var mod : ModList.get().getMods()) {
             loadedMods.add(mod.getModId());
             modNameMap.put(mod.getModId(), mod.getDisplayName());
             String version = mod.getVersion().toString();

@@ -8,13 +8,11 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.common.MinecraftForge;
-import net.neoforged.event.TickEvent;
-import net.neoforged.event.level.LevelEvent;
-import net.neoforged.event.server.ServerStoppedEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import net.neoforged.neoforge.event.level.LevelEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.neoforged.neoforge.registries.IForgeRegistry;
 import net.neoforged.neoforge.registries.NewRegistryEvent;
 import net.neoforged.neoforge.registries.RegistryBuilder;
 
@@ -30,30 +28,26 @@ import static com.brandon3055.brandonscore.BrandonsCore.MODID;
 public class WorldEntityHandler {
     private static final CrashLock LOCK = new CrashLock("Already Initialized.");
 
-    public static final ResourceKey<Registry<WorldEntityType<?>>> ENTITY_TYPE = ResourceKey.createRegistryKey(new ResourceLocation(MODID, "world_entity"));
-    public static IForgeRegistry<WorldEntityType<?>> REGISTRY;
+    public static final ResourceKey<Registry<WorldEntityType<?>>> ENTITY_TYPE = ResourceKey.createRegistryKey(Identifier.fromNamespaceAndPath(MODID, "world_entity"));
+    public static Registry<WorldEntityType<?>> REGISTRY;
     private static final Map<UUID, WorldEntity> ID_ENTITY_MAP = new HashMap<>();
     private static final Map<ResourceKey<Level>, List<WorldEntity>> WORLD_ENTITY_MAP = new HashMap<>();
     private static final Map<ResourceKey<Level>, List<ITickableWorldEntity>> TICKING_ENTITY_MAP = new HashMap<>();
     private static final Map<ResourceKey<Level>, List<WorldEntity>> ADDED_WORLD_ENTITIES = new HashMap<>();
 
     public static void createRegistry(NewRegistryEvent event) {
-        event.create(new RegistryBuilder<WorldEntityType<?>>()
-                        .setName(ENTITY_TYPE.location())
-                        .disableSaving()
-                        .disableSync(),
-                ts -> REGISTRY = ts);
+        REGISTRY = event.create(new RegistryBuilder<>(ENTITY_TYPE).sync(false));
     }
 
-    public static void init() {
+    public static void init(net.neoforged.bus.api.IEventBus modBus) {
         LOCK.lock();
-        IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
         modBus.addListener(WorldEntityHandler::createRegistry);
 
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(WorldEntityHandler::worldLoad);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(WorldEntityHandler::worldUnload);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(WorldEntityHandler::onServerStop);
-        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(WorldEntityHandler::worldTick);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((LevelTickEvent.Pre event) -> worldTick(event));
+        NeoForge.EVENT_BUS.addListener((LevelTickEvent.Post event) -> worldTick(event));
     }
 
     public static void worldLoad(LevelEvent.Load event) {
@@ -70,7 +64,7 @@ public class WorldEntityHandler {
             WORLD_ENTITY_MAP.remove(key);
         }
 
-        WorldEntitySaveData data = world.getDataStorage().computeIfAbsent(WorldEntitySaveData::load,WorldEntitySaveData::new, WorldEntitySaveData.FILE_ID);
+        WorldEntitySaveData data = world.getDataStorage().computeIfAbsent(WorldEntitySaveData.TYPE);
         data.setSaveCallback(() -> handleSave(data, key));
         for (WorldEntity entity : data.getEntities()) {
             addWorldEntity(world, entity);
@@ -78,8 +72,10 @@ public class WorldEntityHandler {
     }
 
     private static void handleSave(WorldEntitySaveData data, ResourceKey<Level> key) {
-        List<WorldEntity> worldEntities = WORLD_ENTITY_MAP.get(key);
-        data.updateEntities(worldEntities);
+        Set<WorldEntity> entities = new LinkedHashSet<>(WORLD_ENTITY_MAP.getOrDefault(key, List.of()));
+        entities.addAll(ADDED_WORLD_ENTITIES.getOrDefault(key, List.of()));
+        entities.removeIf(WorldEntity::isRemoved);
+        data.updateEntities(new ArrayList<>(entities));
     }
 
     public static void worldUnload(LevelEvent.Unload event) {
@@ -97,11 +93,12 @@ public class WorldEntityHandler {
         WORLD_ENTITY_MAP.clear();
         TICKING_ENTITY_MAP.clear();
         ID_ENTITY_MAP.clear();
+        ADDED_WORLD_ENTITIES.clear();
     }
 
-    public static void worldTick(TickEvent.LevelTickEvent event) {
-        if (!(event.level instanceof ServerLevel)) return;
-        Level world = event.level;
+    public static void worldTick(LevelTickEvent event) {
+        if (!(event.getLevel() instanceof ServerLevel)) return;
+        Level world = event.getLevel();
         ResourceKey<Level> key = world.dimension();
 
         //Clear dead entities
@@ -123,14 +120,14 @@ public class WorldEntityHandler {
         //Tick Tickable Entities
         if (TICKING_ENTITY_MAP.containsKey(key)) {
             TICKING_ENTITY_MAP.get(key).forEach(e -> {
-                if (e.getPhase() == event.phase) {
+                if (e.getPhase() == (event instanceof LevelTickEvent.Pre ? ITickableWorldEntity.Phase.START : ITickableWorldEntity.Phase.END)) {
                     e.tick();
                 }
             });
         }
 
         //Add New Entities
-        if (event.phase == TickEvent.Phase.END && ADDED_WORLD_ENTITIES.containsKey(key)) {
+        if ((event instanceof LevelTickEvent.Pre ? ITickableWorldEntity.Phase.START : ITickableWorldEntity.Phase.END) == ITickableWorldEntity.Phase.END && ADDED_WORLD_ENTITIES.containsKey(key)) {
             List<WorldEntity> newEntities = ADDED_WORLD_ENTITIES.get(key);
             if (!newEntities.isEmpty()) {
                 List<WorldEntity> worldEntities = WORLD_ENTITY_MAP.computeIfAbsent(key, e -> new ArrayList<>());

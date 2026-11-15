@@ -24,7 +24,7 @@
 //import net.minecraft.resources.Identifier;
 //import net.minecraft.util.Mth;
 //import net.minecraft.world.item.ItemStack;
-//import net.neoforged.client.gui.ScreenUtils;
+//import net.neoforged.neoforge.client.gui.ScreenUtils;
 //
 ///**
 // * Created by brandon3055 on 12/8/21
@@ -410,7 +410,7 @@
 //        return Utils.getDistance(cx, cy, mouseX, mouseY);
 //    }
 //
-//    public static RenderType guiTextureType(ResourceLocation resource) {
+//    public static RenderType guiTextureType(Identifier resource) {
 //        return RenderType.create("gui_resource", DefaultVertexFormat.POSITION_COLOR_TEX, VertexFormat.Mode.QUADS, 256,
 //                RenderType.CompositeState.builder()
 //                        .setShaderState(new RenderStateShard.ShaderStateShard(GameRenderer::getPositionColorTexShader))

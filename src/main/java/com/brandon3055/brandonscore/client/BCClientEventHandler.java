@@ -20,7 +20,7 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -36,21 +36,20 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.client.event.ClientPlayerNetworkEvent;
-import net.neoforged.client.event.ComputeFovModifierEvent;
-import net.neoforged.client.event.RenderHighlightEvent;
-import net.neoforged.client.event.RenderLevelStageEvent;
-import net.neoforged.neoforge.common.MinecraftForge;
-import net.neoforged.event.TickEvent;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
+import net.neoforged.neoforge.client.event.ComputeFovModifierEvent;
+import net.neoforged.neoforge.client.event.ExtractBlockOutlineRenderStateEvent;
+import net.neoforged.neoforge.client.event.ExtractLevelRenderStateEvent;
+import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
 
 import java.util.*;
 
-import static net.minecraft.client.renderer.RenderStateShard.*;
-import static net.neoforged.client.event.RenderLevelStageEvent.Stage.AFTER_PARTICLES;
-import static net.neoforged.client.event.RenderLevelStageEvent.Stage.AFTER_SOLID_BLOCKS;
 
 /**
  * Created by brandon3055 on 17/07/2016.
@@ -90,7 +89,7 @@ public class BCClientEventHandler {
     }
 
     @SubscribeEvent
-    public static void disconnectEvent(ClientPlayerNetworkEvent.LoggingOut event) {
+    public void disconnectEvent(ClientPlayerNetworkEvent.LoggingOut event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player != null) {
             BCEventHandler.noClipPlayers.remove(mc.player.getUUID());
@@ -98,10 +97,7 @@ public class BCClientEventHandler {
     }
 
     @SubscribeEvent
-    public void tickEnd(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) {
-            return;
-        }
+    public void tickEnd(ClientTickEvent.Post event) {
 
         elapsedTicks++;
         if (Minecraft.getInstance().isPaused()) {
@@ -120,10 +116,10 @@ public class BCClientEventHandler {
     }
 
     @SubscribeEvent
-    public void drawSelectionEvent(RenderHighlightEvent.Block event) {
+    public void drawSelectionEvent(ExtractBlockOutlineRenderStateEvent event) {
         Level level = Minecraft.getInstance().level;
-        if (event.getTarget().getType() == HitResult.Type.MISS || level == null) return;
-        BlockState state = level.getBlockState(event.getTarget().getBlockPos());
+        if (event.getHitResult().getType() == HitResult.Type.MISS || level == null) return;
+        BlockState state = level.getBlockState(event.getHitResult().getBlockPos());
         if (state.getBlock() instanceof BlockBCore block) {
             if (!block.renderSelectionBox(event, level)) {
                 event.setCanceled(true);
@@ -137,12 +133,11 @@ public class BCClientEventHandler {
         float originalFOV = event.getFovModifier();
         float newFOV = originalFOV;
 
-        int slotIndex = 2;
-        for (ItemStack stack : player.getInventory().armor) {
+        for (EquipmentSlot slot : new EquipmentSlot[]{EquipmentSlot.FEET, EquipmentSlot.LEGS, EquipmentSlot.CHEST, EquipmentSlot.HEAD}) {
+            ItemStack stack = player.getItemBySlot(slot);
             if (!stack.isEmpty() && stack.getItem() instanceof IFOVModifierItem) {
-                newFOV = ((IFOVModifierItem) stack.getItem()).getNewFOV(player, stack, newFOV, originalFOV, EquipmentSlot.values()[slotIndex]);
+                newFOV = ((IFOVModifierItem) stack.getItem()).getNewFOV(player, stack, newFOV, originalFOV, slot);
             }
-            slotIndex++;
         }
 
         ItemStack stack = player.getOffhandItem();
@@ -159,112 +154,70 @@ public class BCClientEventHandler {
         }
     }
 
+    private static final net.minecraft.util.context.ContextKey<List<net.minecraft.world.phys.Vec3>> DEBUG_BOXES =
+            new net.minecraft.util.context.ContextKey<>(net.minecraft.resources.Identifier.fromNamespaceAndPath("brandonscore", "debug_boxes"));
+
+    @SubscribeEvent
+    public void extractDebug(ExtractLevelRenderStateEvent event) {
+        List<Vec3> boxes = debugBlockList == null ? List.of() : debugBlockList.stream()
+                .map(v -> new Vec3(v.x, v.y, v.z))
+                .sorted(Comparator.comparingDouble(v -> v.distanceToSqr(event.getCamera().position())))
+                .limit(1001).toList();
+        event.getRenderState().setRenderData(DEBUG_BOXES, boxes);
+    }
+
     @SubscribeEvent(priority = EventPriority.LOW)
-    public void renderLevelStage(RenderLevelStageEvent event) {
-        if (event.getStage() == AFTER_SOLID_BLOCKS) doDebugRendering(event);
-        if (event.getStage() != AFTER_PARTICLES) return;
-
-        BlockEntityRenderDispatcher tileRenderDispatcher = Minecraft.getInstance().getBlockEntityRenderDispatcher();
-        MultiBufferSource buffers = Minecraft.getInstance().renderBuffers().bufferSource();
-        LevelRenderer levelRenderer = event.getLevelRenderer();
-        PoseStack poseStack = event.getPoseStack();
-        Camera camera = event.getCamera();
-        Vec3 vec3 = event.getCamera().getPosition();
-        double camX = vec3.x();
-        double camY = vec3.y();
-        double camZ = vec3.z();
-
-        for (LevelRenderer.RenderChunkInfo renderChunkInfo : levelRenderer.renderChunksInFrustum) {
-            List<BlockEntity> list = renderChunkInfo.chunk.getCompiledChunk().getRenderableBlockEntities();
-            for (BlockEntity tile : list) {
-                if (!event.getFrustum().isVisible(tile.getRenderBoundingBox())) continue;
-                BlockEntityRenderer<BlockEntity> renderer = tileRenderDispatcher.getRenderer(tile);
-                if (renderer instanceof BlockEntityRendererTransparent<BlockEntity> rendererTransparent) {
-                    BlockPos pos = tile.getBlockPos();
-                    poseStack.pushPose();
-                    poseStack.translate((double) pos.getX() - camX, (double) pos.getY() - camY, (double) pos.getZ() - camZ);
-                    renderTransparent(camera, rendererTransparent, tile, event.getPartialTick(), poseStack, buffers);
-                    poseStack.popPose();
-                }
+    public void renderLevelStage(SubmitCustomGeometryEvent event) {
+        var dispatcher = Minecraft.getInstance().getBlockEntityRenderDispatcher();
+        var levelState = event.getLevelRenderState();
+        var camera = levelState.cameraRenderState;
+        PoseStack pose = event.getPoseStack();
+        // Vanilla extraction already includes visible and global block entities,
+        // validity, view-distance, and frustum checks. Do not walk live chunk lists.
+        for (var state : levelState.blockEntityRenderStates) {
+            var renderer = dispatcher.getRenderer(state);
+            if (renderer instanceof BlockEntityRendererTransparent<?, ?> transparent) {
+                pose.pushPose();
+                var pos = state.blockPos;
+                pose.translate(pos.getX() - camera.pos.x, pos.getY() - camera.pos.y, pos.getZ() - camera.pos.z);
+                submitTransparent(transparent, state, pose, event.getSubmitNodeCollector(), camera);
+                pose.popPose();
             }
         }
-
-        synchronized (levelRenderer.globalBlockEntities) {
-            for (BlockEntity tile : levelRenderer.globalBlockEntities) {
-                if (!event.getFrustum().isVisible(tile.getRenderBoundingBox())) continue;
-                BlockEntityRenderer<BlockEntity> renderer = tileRenderDispatcher.getRenderer(tile);
-                if (renderer instanceof BlockEntityRendererTransparent<BlockEntity> rendererTransparent) {
-                    BlockPos blockpos3 = tile.getBlockPos();
-                    poseStack.pushPose();
-                    poseStack.translate((double) blockpos3.getX() - camX, (double) blockpos3.getY() - camY, (double) blockpos3.getZ() - camZ);
-                    renderTransparent(camera, rendererTransparent, tile, event.getPartialTick(), poseStack, buffers);
-                    poseStack.popPose();
-                }
-            }
-        }
+        doDebugRendering(event);
     }
 
-    public <E extends BlockEntity> void renderTransparent(Camera camera, BlockEntityRendererTransparent<E> renderer, E tile, float partialTicks, PoseStack poseStack, MultiBufferSource buffers) {
-        if (!tile.hasLevel() || !tile.getType().isValid(tile.getBlockState())) return;
-        if (!renderer.shouldRender(tile, camera.getPosition())) return;
-        int packedLight = LevelRenderer.getLightColor(tile.getLevel(), tile.getBlockPos());
-        try {
-            renderer.renderTransparent(tile, partialTicks, poseStack, buffers, packedLight, OverlayTexture.NO_OVERLAY);
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private static void submitTransparent(BlockEntityRendererTransparent renderer,
+            net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState state, PoseStack pose,
+            net.minecraft.client.renderer.SubmitNodeCollector collector,
+            net.minecraft.client.renderer.state.level.CameraRenderState camera) {
+        renderer.submitTransparent(state, pose, collector, camera);
     }
 
-    private static final DepthTestStateShard DISABLE_DEPTH = new DepthTestStateShard("none", 519) {
-        @Override
-        public void setupRenderState() {
-            RenderSystem.disableDepthTest();
-        }
-    };
-
-    private static final RenderType boxNoDepth = RenderType.create("ccl:box_no_depth", DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.QUADS, 256, false, true, RenderType.CompositeState.builder()
-            .setShaderState(POSITION_COLOR_SHADER)
-            .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
-            .setWriteMaskState(COLOR_WRITE)
-            .setDepthTestState(DISABLE_DEPTH)
-            .createCompositeState(false)
-    );
+    private static final RenderType boxNoDepth = RenderType.create("brandonscore:box_no_depth",
+            net.minecraft.client.renderer.rendertype.RenderSetup.builder(
+                    com.mojang.blaze3d.pipeline.RenderPipeline.builder(net.minecraft.client.renderer.RenderPipelines.DEBUG_FILLED_SNIPPET)
+                            .withLocation(net.minecraft.resources.Identifier.fromNamespaceAndPath("brandonscore", "pipeline/box_no_depth"))
+                            .withDepthStencilState(java.util.Optional.empty()).build())
+                    .sortOnUpload().createRenderSetup());
 
     private static final Cuboid6 BOX = Cuboid6.full.copy().expand(0.02);
     private static final float[] RED = EnumColour.RED.getColour(128).packArray();
-
     public static List<Vector3> debugBlockList = null;
-    int i = 0;
-    public void doDebugRendering(RenderLevelStageEvent event) {
-        if (debugBlockList == null) return;
 
-        MultiBufferSource.BufferSource source = Minecraft.getInstance().renderBuffers().bufferSource();
-        Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
-        Vec3 cameraPos = camera.getPosition();
-        PoseStack pStack = event.getPoseStack();
-        pStack.pushPose();
-
-        if (i++ % 100 == 0) {
-            debugBlockList.sort(Comparator.comparingDouble(value -> value.distanceSquared(Vector3.fromEntity(Minecraft.getInstance().player))));
-        }
-
-        pStack.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
-        TransformingVertexConsumer consumer = new TransformingVertexConsumer(source.getBuffer(boxNoDepth), pStack);
-
-        int i = 0;
-        for (Vector3 pos : debugBlockList) {
-            i++;
-            RenderUtils.bufferCuboidSolid(
-                    consumer,
-                    BOX.copy().add(pos),
-                    RED[0], RED[1], RED[2], RED[3]
-            );
-            if (i > 1000) break;;
-        }
-
-
-        source.endBatch();
-        pStack.popPose();
-
+    public void doDebugRendering(SubmitCustomGeometryEvent event) {
+        var boxes = event.getLevelRenderState().getRenderData(DEBUG_BOXES);
+        if (boxes == null || boxes.isEmpty()) return;
+        var cameraPos = event.getLevelRenderState().cameraRenderState.pos;
+        PoseStack pose = event.getPoseStack();
+        pose.pushPose();
+        pose.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
+        event.getSubmitNodeCollector().submitCustomGeometry(pose, boxNoDepth, (matrix, buffer) -> {
+            var consumer = new TransformingVertexConsumer(buffer, new codechicken.lib.vec.Matrix4(matrix));
+            for (Vec3 pos : boxes) RenderUtils.bufferCuboidSolid(consumer,
+                    BOX.copy().add(new Vector3(pos.x, pos.y, pos.z)), RED[0], RED[1], RED[2], RED[3]);
+        });
+        pose.popPose();
     }
 }

@@ -7,7 +7,7 @@
 //import com.mojang.blaze3d.vertex.PoseStack;
 //import net.minecraft.client.Minecraft;
 //import net.minecraft.client.multiplayer.ClientLevel;
-//import net.minecraft.resources.ResourceLocation;
+//import net.minecraft.resources.Identifier;
 //import net.minecraft.world.InteractionHand;
 //import net.minecraft.world.entity.Entity;
 //import net.minecraft.world.entity.EntityType;
@@ -15,7 +15,7 @@
 //import net.minecraft.world.entity.LivingEntity;
 //import net.minecraft.world.entity.player.Player;
 //import net.minecraft.world.item.ItemStack;
-//import net.minecraftforge.registries.ForgeRegistries;
+//import net.minecraft.core.registries.BuiltInRegistries;
 //import org.apache.logging.log4j.LogManager;
 //import org.apache.logging.log4j.Logger;
 //
@@ -192,7 +192,7 @@
 //        if (entityString.startsWith("player:")) {
 ////            entity = createRenderPlayer(world, entityString.replaceFirst("player:", ""));
 //        } else {
-//            EntityType type = ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation(entityString));
+//            EntityType type = BuiltInRegistries.ENTITY_TYPE.getValue(Identifier.parse(entityString));
 //            if (type != null) {
 //                entity = type.create(world);
 //            }
@@ -222,8 +222,8 @@
 ////            }
 ////
 ////            @Override
-////            public ResourceLocation getSkinTextureLocation() {
-////                ResourceLocation resourcelocation;
+////            public Identifier getSkinTextureLocation() {
+////                Identifier resourcelocation;
 ////
 ////                Minecraft minecraft = Minecraft.getInstance();
 ////                Map<MinecraftProfileTexture.Type, MinecraftProfileTexture> map = minecraft.getSkinManager().getInsecureSkinInformation(getGameProfile());

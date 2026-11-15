@@ -96,12 +96,12 @@ public class InventoryDynamic implements Container {
     }
 
     @Override
-    public void startOpen(Player player) {
+    public void startOpen(net.minecraft.world.entity.ContainerUser player) {
 
     }
 
     @Override
-    public void stopOpen(Player player) {
+    public void stopOpen(net.minecraft.world.entity.ContainerUser player) {
 
     }
 
@@ -119,26 +119,24 @@ public class InventoryDynamic implements Container {
 
 
 
-    public void writeToNBT(CompoundTag compound) {
+    public void writeToNBT(net.minecraft.core.HolderLookup.Provider registries, CompoundTag compound) {
         ListTag list = new ListTag();
 
         for (ItemStack stack : stacks) {
             if (!stack.isEmpty() && stack.getCount() > 0) {
-                CompoundTag tag = new CompoundTag();
-                stack.save(tag);
-                list.add(tag);
+                list.add(ItemStack.CODEC.encodeStart(registries.createSerializationContext(net.minecraft.nbt.NbtOps.INSTANCE), stack).getOrThrow());
             }
         }
 
         compound.put("InvItems", list);
     }
 
-    public void readFromNBT(CompoundTag compound) {
-        ListTag list = compound.getList("InvItems", 10);
+    public void readFromNBT(net.minecraft.core.HolderLookup.Provider registries, CompoundTag compound) {
+        ListTag list = compound.getListOrEmpty("InvItems");
         stacks.clear();
 
         for (int i = 0; i < list.size(); i++) {
-            stacks.add(ItemStack.of(list.getCompound(i)));
+            stacks.add(ItemStack.CODEC.parse(registries.createSerializationContext(net.minecraft.nbt.NbtOps.INSTANCE), list.getCompoundOrEmpty(i)).getOrThrow());
         }
     }
 

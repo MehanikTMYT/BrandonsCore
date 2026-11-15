@@ -17,7 +17,7 @@
 //import net.minecraft.client.renderer.MultiBufferSource;
 //import net.minecraft.network.chat.Style;
 //import net.minecraft.network.chat.TextColor;
-//import net.minecraft.resources.ResourceLocation;
+//import net.minecraft.resources.Identifier;
 //import net.minecraft.util.FormattedCharSink;
 //import net.minecraft.util.StringDecomposer;
 //
@@ -173,7 +173,7 @@
 //
 //
 //
-//        private FontSet getFontSet(ResourceLocation p_238419_1_) {
+//        private FontSet getFontSet(Identifier p_238419_1_) {
 //            return fontRenderer.fonts.apply(p_238419_1_);
 //        }
 //

@@ -18,7 +18,7 @@ import net.minecraft.server.level.TicketType;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.RelativeMovement;
+import net.minecraft.world.entity.Relative;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec2;
@@ -37,7 +37,7 @@ public class CommandTPX {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(
                 Commands.literal("tpx")
-                        .requires((p_198816_0_) -> p_198816_0_.hasPermission(2))
+                        .requires(net.minecraft.commands.Commands.hasPermission(net.minecraft.commands.Commands.LEVEL_GAMEMASTERS))
                         .then(Commands.argument("dimension", DimensionArgument.dimension())
                                 .executes(ctx -> teleportToPos(ctx.getSource(), Collections.singleton(ctx.getSource().getEntityOrException()), DimensionArgument.getDimension(ctx, "dimension"), null, null))
                                 .then(Commands.argument("location", Vec3Argument.vec3())
@@ -75,7 +75,7 @@ public class CommandTPX {
 
     private static int teleportToEntity(CommandSourceStack source, Collection<? extends Entity> targets, Entity destination) {
         for (Entity entity : targets) {
-            teleport(source, entity, (ServerLevel) destination.level(), destination.getX(), destination.getY(), destination.getZ(), EnumSet.noneOf(RelativeMovement.class), destination.getYRot(), destination.getXRot());
+            teleport(source, entity, (ServerLevel) destination.level(), destination.getX(), destination.getY(), destination.getZ(), EnumSet.noneOf(Relative.class), destination.getYRot(), destination.getXRot());
         }
 
         if (targets.size() == 1) {
@@ -116,29 +116,29 @@ public class CommandTPX {
 
         Vec3 vec3d = position.getPosition(source);
         Vec2 vec2f = rotationIn == null ? null : rotationIn.getRotation(source);
-        Set<RelativeMovement> set = EnumSet.noneOf(RelativeMovement.class);
+        Set<Relative> set = EnumSet.noneOf(Relative.class);
         if (position.isXRelative()) {
-            set.add(RelativeMovement.X);
+            set.add(Relative.X);
         }
 
         if (position.isYRelative()) {
-            set.add(RelativeMovement.Y);
+            set.add(Relative.Y);
         }
 
         if (position.isZRelative()) {
-            set.add(RelativeMovement.Z);
+            set.add(Relative.Z);
         }
 
         if (rotationIn == null) {
-            set.add(RelativeMovement.X_ROT);
-            set.add(RelativeMovement.Y_ROT);
+            set.add(Relative.X_ROT);
+            set.add(Relative.Y_ROT);
         } else {
             if (rotationIn.isXRelative()) {
-                set.add(RelativeMovement.X_ROT);
+                set.add(Relative.X_ROT);
             }
 
             if (rotationIn.isYRelative()) {
-                set.add(RelativeMovement.Y_ROT);
+                set.add(Relative.Y_ROT);
             }
         }
 
@@ -159,48 +159,20 @@ public class CommandTPX {
         return targets.size();
     }
 
-    private static void teleport(CommandSourceStack source, Entity entityIn, ServerLevel worldIn, double x, double y, double z, Set<RelativeMovement> relativeList, float yaw, float pitch) {
-        if (entityIn instanceof ServerPlayer) {
-            ChunkPos chunkpos = new ChunkPos(BlockPos.containing(x, y, z));
-            worldIn.getChunkSource().addRegionTicket(TicketType.POST_TELEPORT, chunkpos, 1, entityIn.getId());
-            entityIn.stopRiding();
-            if (((ServerPlayer) entityIn).isSleeping()) {
-                ((ServerPlayer) entityIn).stopSleeping();
+    private static void teleport(CommandSourceStack source, Entity entityIn, ServerLevel worldIn, double x, double y, double z, Set<Relative> relativeList, float yaw, float pitch) {
+        float newYaw = Mth.wrapDegrees(yaw);
+        float newPitch = Mth.clamp(Mth.wrapDegrees(pitch), -90.0F, 90.0F);
+        // Coordinates passed by Coordinates are already absolute; vanilla expects relative deltas.
+        double tx = relativeList.contains(Relative.X) ? x - entityIn.getX() : x;
+        double ty = relativeList.contains(Relative.Y) ? y - entityIn.getY() : y;
+        double tz = relativeList.contains(Relative.Z) ? z - entityIn.getZ() : z;
+        float ry = relativeList.contains(Relative.Y_ROT) ? newYaw - entityIn.getYRot() : newYaw;
+        float rx = relativeList.contains(Relative.X_ROT) ? newPitch - entityIn.getXRot() : newPitch;
+        if (entityIn.teleportTo(worldIn, tx, ty, tz, relativeList, ry, rx, true)) {
+            if (!(entityIn instanceof LivingEntity living) || !living.isFallFlying()) {
+                entityIn.setDeltaMovement(entityIn.getDeltaMovement().multiply(1, 0, 1));
+                entityIn.setOnGround(true);
             }
-
-            if (worldIn == entityIn.level()) {
-                ((ServerPlayer) entityIn).connection.teleport(x, y, z, yaw, pitch, relativeList);
-            } else {
-                ((ServerPlayer) entityIn).teleportTo(worldIn, x, y, z, yaw, pitch);
-            }
-
-            entityIn.setYHeadRot(yaw);
-        } else {
-            float f1 = Mth.wrapDegrees(yaw);
-            float f = Mth.wrapDegrees(pitch);
-            f = Mth.clamp(f, -90.0F, 90.0F);
-            if (worldIn == entityIn.level()) {
-                entityIn.moveTo(x, y, z, f1, f);
-                entityIn.setYHeadRot(f1);
-            } else {
-                entityIn.unRide();
-                entityIn.changeDimension(worldIn);
-                Entity entity = entityIn;
-                entityIn = entityIn.getType().create(worldIn);
-                if (entityIn == null) {
-                    return;
-                }
-
-                entityIn.restoreFrom(entity);
-                entityIn.moveTo(x, y, z, f1, f);
-                entityIn.setYHeadRot(f1);
-                worldIn.addDuringTeleport(entityIn);
-            }
-        }
-
-        if (!(entityIn instanceof LivingEntity) || !((LivingEntity) entityIn).isFallFlying()) {
-            entityIn.setDeltaMovement(entityIn.getDeltaMovement().multiply(1.0D, 0.0D, 1.0D));
-            entityIn.setOnGround(true);
         }
     }
 

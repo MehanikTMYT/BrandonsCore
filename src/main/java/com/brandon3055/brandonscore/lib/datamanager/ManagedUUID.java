@@ -98,14 +98,14 @@ public class ManagedUUID extends AbstractManagedData<UUID> {
     @Override
     public void toNBT(CompoundTag compound) {
         if (value != null) {
-            compound.putUUID(name, value);
+            compound.store(name, net.minecraft.core.UUIDUtil.CODEC, value);
         }
     }
 
     @Override
     public void fromNBT(CompoundTag compound) {
         if (compound.contains(name)) {
-            value = compound.getUUID(name);
+            value = compound.read(name, net.minecraft.core.UUIDUtil.CODEC).orElse(null);
         } else {
             value = null;
         }

@@ -7,7 +7,7 @@ import com.brandon3055.brandonscore.BrandonsCore;
 import com.brandon3055.brandonscore.network.BCoreNetwork;
 import com.brandon3055.brandonscore.utils.LogHelperBC;
 import com.brandon3055.brandonscore.utils.Utils;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -45,7 +45,7 @@ public class ChatHelper {
      *
      * @param player  The player.
      * @param message The message
-     * @param index   message index.
+     * @param messageId message identifier.
      */
     public static void sendIndexed(Player player, Component message, UUID messageId) {
         if (player.level().isClientSide()){
@@ -74,12 +74,12 @@ public class ChatHelper {
      * For situations where this code will be called on both the client and the server. This ensures the message is not duplicated.
      * This only sends the server side message since the server is usually the one calling the shots.
      * 
-     * If the client side message is what you want then use {@link #sendDeDupeIndexedClient(PlayerEntity, ITextComponent, int)}
+     * If the client side message is what you want then use {@code #sendDeDupeIndexedClient(PlayerEntity, ITextComponent, int)}
      * 
      * @param player  The player.
      * @param message The message
      * @param index   message index.
-     * @see #sendIndexed(PlayerEntity, ITextComponent, int) 
+     * See {@code #sendIndexed(PlayerEntity, ITextComponent, int) }
      */
     public static void sendDeDupeIndexed(Player player, Component message, UUID index) {
         if (player instanceof ServerPlayer) {
@@ -109,7 +109,7 @@ public class ChatHelper {
      * @param player  The player.
      * @param message The message
      * @param index   message index.
-     * @see #sendIndexed(PlayerEntity, ITextComponent, int)
+     * See {@code #sendIndexed(PlayerEntity, ITextComponent, int)}
      */
     public static void sendDeDupeIndexedClient(Player player, Component message, UUID index) {
         if (player instanceof LocalPlayer) {

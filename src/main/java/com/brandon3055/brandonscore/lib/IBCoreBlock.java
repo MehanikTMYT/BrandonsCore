@@ -13,6 +13,6 @@ public interface IBCoreBlock {
     }
 
     default CompoundTag getNBTShareTag(ItemStack stack) {
-        return stack.getTag();
+        return com.brandon3055.brandonscore.utils.ItemNBTHelper.getCompound(stack);
     }
 }

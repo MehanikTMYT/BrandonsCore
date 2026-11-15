@@ -13,9 +13,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.neoforge.capabilities.ForgeCapabilities;
-import net.neoforged.neoforge.capabilities.ICapabilityProvider;
-import com.brandon3055.brandonscore.lib.Optional;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import com.brandon3055.brandonscore.capability.BCapabilityProvider;
+import java.util.Optional;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 
 import java.util.List;
@@ -33,12 +33,19 @@ public class EnergyUtils {
             return null;
         }
 
-        return getStorageFromProvider(tile, side);
+        IOPStorage op = tile.getLevel().getCapability(CapabilityOP.OP, tile.getBlockPos(), side);
+        if (op != null) return op;
+        var energy = tile.getLevel().getCapability(Capabilities.Energy.BLOCK, tile.getBlockPos(), side);
+        return energy == null ? null : new OPWrappers.FE(IEnergyStorage.of(energy));
     }
 
     public static IOPStorage getStorage(ItemStack stack) {
         if (!stack.isEmpty()) {
-            return getStorageFromProvider(stack, null);
+            var access = net.neoforged.neoforge.transfer.access.ItemAccess.forStack(stack);
+            IOPStorage op = stack.getCapability(CapabilityOP.ITEM, access);
+            if (op != null) return op;
+            var energy = stack.getCapability(Capabilities.Energy.ITEM, access);
+            return energy == null ? null : new OPWrappers.FE(IEnergyStorage.of(energy));
         }
 
         return null;
@@ -48,14 +55,10 @@ public class EnergyUtils {
      * This should not be used on tiles or items as it will miss anything that implements the RF API.
      * This is only public to allow for other ICapabilityProvider's
      */
-    public static IOPStorage getStorageFromProvider(ICapabilityProvider provider, Direction side) {
+    public static IOPStorage getStorageFromProvider(BCapabilityProvider provider, Direction side) {
         Optional<IOPStorage> op = provider.getCapability(CapabilityOP.OP, side);
         if (op.isPresent()) {
             return op.orElseThrow(ImpossibleException::new);
-        }
-        Optional<IEnergyStorage> fe = provider.getCapability(ForgeCapabilities.ENERGY, side);
-        if (fe.isPresent()) {
-            return new OPWrappers.FE(fe.orElseThrow(ImpossibleException::new));
         }
         return null;
     }
@@ -82,7 +85,7 @@ public class EnergyUtils {
      * This should not be used on tiles or items as it will miss anything that implements the RF API.
      * This is only public to allow for other ICapabilityProvider's
      */
-    public static long insertEnergyIntoProvider(ICapabilityProvider provider, long energy, Direction side, boolean simulate) {
+    public static long insertEnergyIntoProvider(BCapabilityProvider provider, long energy, Direction side, boolean simulate) {
         IOPStorage storage = getStorageFromProvider(provider, side);
         if (storage != null && storage.canReceive()) {
             return storage.receiveOP(energy, simulate);
@@ -112,7 +115,7 @@ public class EnergyUtils {
      * This should not be used on tiles or items as it will miss anything that implements the RF API.
      * This is only public to allow for other ICapabilityProvider's
      */
-    public static long extractEnergyFromProvider(ICapabilityProvider provider, long energy, Direction side, boolean simulate) {
+    public static long extractEnergyFromProvider(BCapabilityProvider provider, long energy, Direction side, boolean simulate) {
         IOPStorage storage = getStorageFromProvider(provider, side);
         if (storage != null && storage.canExtract()) {
             return storage.extractOP(energy, simulate);
@@ -231,13 +234,12 @@ public class EnergyUtils {
 
     // ================= Utils =================
 
-    @OnlyIn(Dist.CLIENT)
     public static void addEnergyInfo(ItemStack stack, List<Component> list) {
         IOPStorage storage = getStorage(stack);
         if (storage != null) {
             String energy = Utils.formatNumber(storage.getOPStored());
             String maxEnergy = Utils.formatNumber(storage.getMaxOPStored());
-            String postFix = Screen.hasShiftDown() ? "(" + I18n.get("op.brandonscore.operational_potential") + ")" : I18n.get("op.brandonscore.op");
+            String postFix = net.minecraft.client.Minecraft.getInstance().hasShiftDown() ? "(" + I18n.get("op.brandonscore.operational_potential") + ")" : I18n.get("op.brandonscore.op");
             list.add(Component.literal(I18n.get("op.brandonscore.charge") + ": " + energy + " / " + maxEnergy + " " + postFix).withStyle(ChatFormatting.GRAY));
         }
     }

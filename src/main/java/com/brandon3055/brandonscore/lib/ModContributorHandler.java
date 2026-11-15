@@ -17,7 +17,7 @@
 //import net.minecraft.nbt.JsonToNBT;
 //
 //import net.minecraft.nbt.CompoundNBT;
-//import net.neoforged.neoforge.common.MinecraftForge;
+//import net.neoforged.neoforge.common.NeoForge;
 //
 //import org.apache.commons.io.IOUtils;
 //
@@ -128,11 +128,11 @@
 //     */
 //    @Nullable
 //    public ContributorData getContributorData(PlayerEntity player) {
-//        if (player == null || player.getGameProfile().getId() == null) {
+//        if (player == null || player.getGameProfile().id() == null) {
 //            return null;
 //        }
 //
-//        UUID id = player.getGameProfile().getId();
+//        UUID id = player.getGameProfile().id();
 //
 //        return validatedUserCache.computeIfAbsent(id, uuid -> {
 //            String username = player.getName();
@@ -268,7 +268,7 @@
 //
 //    @SubscribeEvent
 //    public void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
-//        UUID id = event.player.getGameProfile().getId();
+//        UUID id = event.player.getGameProfile().id();
 //        if (id != null) {
 //            validatedUserCache.remove(id);
 //        }

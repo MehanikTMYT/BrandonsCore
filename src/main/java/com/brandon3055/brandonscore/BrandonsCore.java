@@ -16,7 +16,7 @@ import com.brandon3055.brandonscore.multiblock.MultiBlockManager;
 import com.brandon3055.brandonscore.network.BCoreNetwork;
 import com.brandon3055.brandonscore.worldentity.WorldEntityHandler;
 import net.neoforged.api.distmarker.Dist;
-import com.brandon3055.brandonscore.lib.Optional;
+import java.util.Optional;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
 import org.apache.logging.log4j.Level;
@@ -35,10 +35,10 @@ public class BrandonsCore {
     public static boolean inDev = false;
     public static IEquipmentManager equipmentManager = null;
 
-    public BrandonsCore() {
+    public BrandonsCore(net.neoforged.bus.api.IEventBus modBus) {
         FileHandler.init();
         ModHelperBC.init();
-        proxy = DistExecutor.unsafeRunForDist(() -> ClientProxy::new, () -> CommonProxy::new);
+        proxy = net.neoforged.fml.loading.FMLEnvironment.getDist().isClient() ? new ClientProxy() : new CommonProxy();
         inDev = ModHelperBC.getModVersion(MODID).equals("0.0NONE");
 
         //Knock Knock...
@@ -57,19 +57,18 @@ public class BrandonsCore {
             LOGGER.info("Oh well.. At least we dont have to worry about getting blown up now...");
         }
 
-        CapabilityOP.init();
-        BCoreNetwork.init();
+        BCoreNetwork.init(modBus);
         BCConfig.load();
         ProcessHandler.init();
         MultiBlockManager.init();
         BlockToStackHelper.init();
-        WorldEntityHandler.init();
+        WorldEntityHandler.init(modBus);
         ContributorHandler.init();
         BCEventHandler.init();
         BCCommands.init();
-        SighEditHandler.init();
+        SighEditHandler.init(modBus);
 
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> ClientInit::init);
+        if (net.neoforged.fml.loading.FMLEnvironment.getDist().isClient()) ClientInit.init(modBus);
     }
 }
 

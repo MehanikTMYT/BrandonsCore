@@ -14,13 +14,13 @@ import net.covers1624.quack.net.java.JavaDownloadAction;
 import net.covers1624.quack.util.CrashLock;
 import net.minecraft.ChatFormatting;
 import net.minecraft.DefaultUncaughtExceptionHandler;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.neoforge.common.MinecraftForge;
-import net.neoforged.event.TickEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
@@ -77,13 +77,15 @@ public class ContributorFetcher {
     public void init() {
         LOCK.lock();                                              //I can do this because ClientTickEvent is server safe.
          // STUB(port-26.1.2): DistExecutor  net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((TickEvent.ClientTickEvent event) -> onTick(event)));
-        DistExecutor.unsafeRunWhenOn(Dist.DEDICATED_SERVER, () -> () -> net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((TickEvent.ServerTickEvent event) -> onTick(event)));
+        if (net.neoforged.fml.loading.FMLEnvironment.getDist() == Dist.DEDICATED_SERVER) {
+            net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> onTick());
+        }
         downloadHashes();
     }
 
     private int tick;
 
-    private void onTick(TickEvent event) {
+    private void onTick() {
         if (!TASK_QUE.isEmpty()) {
             TASK_QUE.forEach(task -> FUTURE_TASKS.add(THREAD_POOL.submit(task)));
             TASK_QUE.clear();
@@ -149,7 +151,7 @@ public class ContributorFetcher {
     }
 
     public void linkUser(Player player, String linkCode, Consumer<Integer> callback) {
-        if (!isOnline(player.getUUID(), player.getGameProfile().getName())) {
+        if (!isOnline(player.getUUID(), player.getGameProfile().name())) {
             player.sendSystemMessage(Component.literal("You must be playing in online mode to link your account.").withStyle(ChatFormatting.RED));
         } else {
             queTask(new LinkTask(player.getUUID(), linkCode, callback));

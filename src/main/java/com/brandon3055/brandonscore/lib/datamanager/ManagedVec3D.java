@@ -119,11 +119,11 @@ public class ManagedVec3D extends AbstractManagedData<Vec3D> {
     @Override
     public void fromNBT(CompoundTag compound) {
         value = new Vec3D();
-        if (compound.contains(name, 9) && compound.getList(name, 9).size() == 3) {
-            ListTag list = compound.getList(name, 9);
-            value.x = list.getDouble(0);
-            value.x = list.getDouble(1);
-            value.x = list.getDouble(2);
+        if ((compound.get(name) instanceof net.minecraft.nbt.ListTag) && compound.getListOrEmpty(name).size() == 3) {
+            ListTag list = compound.getListOrEmpty(name);
+            value.x = list.getDoubleOr(0, 0D);
+            value.x = list.getDoubleOr(1, 0D);
+            value.x = list.getDoubleOr(2, 0D);
         }
         notifyListeners(value);
     }

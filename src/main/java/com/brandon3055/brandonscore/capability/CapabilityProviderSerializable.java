@@ -2,10 +2,10 @@ package com.brandon3055.brandonscore.capability;
 
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.neoforged.neoforge.capabilities.Capability;
-import net.neoforged.neoforge.capabilities.ICapabilitySerializable;
+import net.neoforged.neoforge.capabilities.BaseCapability;
+import com.brandon3055.brandonscore.capability.BCapabilityProvider;
 import com.brandon3055.brandonscore.lib.datamanager.BCSerializable;
-import com.brandon3055.brandonscore.lib.Optional;
+import java.util.Optional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -13,23 +13,23 @@ import javax.annotation.Nullable;
 /**
  * Created by brandon3055 on 19/11/2022
  */
-public class CapabilityProviderSerializable<T extends BCSerializable<CompoundTag>> implements ICapabilitySerializable<CompoundTag> {
+public class CapabilityProviderSerializable<T extends BCSerializable<CompoundTag>> implements BCapabilityProvider, BCSerializable<CompoundTag> {
 
-    protected final Capability<T> capability;
+    protected final BaseCapability<T, ?> capability;
     protected final T instance;
     protected final Optional<T> instanceOpt;
 
-    public CapabilityProviderSerializable(Capability<T> capability, T instance) {
+    public CapabilityProviderSerializable(BaseCapability<T, ?> capability, T instance) {
         this.capability = capability;
         this.instance = instance;
-        instanceOpt = Optional.of(() -> this.instance);
+        instanceOpt = Optional.of(this.instance);
     }
 
     @Nonnull
     @Override
-    public <R> Optional<R> getCapability(@Nonnull Capability<R> cap, @Nullable Direction side) {
+    public <R> Optional<R> getCapability(@Nonnull BaseCapability<R, ?> cap, @Nullable Direction side) {
         if (capability == cap) {
-            return instanceOpt.cast();
+            return instanceOpt.map(cap.typeClass()::cast);
         }
         return Optional.empty();
     }

@@ -5,7 +5,7 @@
 //import com.google.common.base.Objects;
 //import com.google.common.collect.ImmutableMap;
 //import net.minecraft.resources.Identifier;
-//import net.neoforged.client.model.animation.Animation;
+//import net.neoforged.neoforge.client.model.animation.Animation;
 //import net.neoforged.neoforge.common.animation.ITimeValue;
 //import net.neoforged.neoforge.common.model.animation.IAnimationStateMachine;
 //
@@ -21,7 +21,7 @@
 //    private float targetSpeed;
 //    private float transitionRate;
 //
-//    public SimpleAnimHandler(ResourceLocation asm) {
+//    public SimpleAnimHandler(Identifier asm) {
 //        this.asm = BrandonsCore.proxy.loadASM(asm, ImmutableMap.of("anim_pos", animPos));
 //    }
 //

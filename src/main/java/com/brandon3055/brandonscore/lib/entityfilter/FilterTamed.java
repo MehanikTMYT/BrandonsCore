@@ -47,7 +47,7 @@ public class FilterTamed extends FilterBase {
         boolean isTamable = entity instanceof TamableAnimal;
         if (isTamable) {
             TamableAnimal ownable = (TamableAnimal) entity;
-            if (ownable.getOwnerUUID() != null) {
+            if (ownable.getOwnerReference() != null) {
                 return whitelistTamed;
             }
             return includeTamable;
@@ -60,19 +60,17 @@ public class FilterTamed extends FilterBase {
         return FilterType.TAMED;
     }
 
-    @Override
-    public CompoundTag serializeNBT() {
-        CompoundTag compound = super.serializeNBT();
+    public CompoundTag serializeNBT(net.minecraft.core.HolderLookup.Provider registries) {
+        CompoundTag compound = super.serializeNBT(registries);
         compound.putBoolean("include", whitelistTamed);
         compound.putBoolean("tamable", includeTamable);
         return compound;
     }
 
-    @Override
-    public void deserializeNBT(CompoundTag nbt) {
-        super.deserializeNBT(nbt);
-        whitelistTamed = nbt.getBoolean("include");
-        includeTamable = nbt.getBoolean("tamable");
+    public void deserializeNBT(net.minecraft.core.HolderLookup.Provider registries, CompoundTag nbt) {
+        super.deserializeNBT(registries, nbt);
+        whitelistTamed = nbt.getBooleanOr("include", false);
+        includeTamable = nbt.getBooleanOr("tamable", false);
     }
 
     @Override

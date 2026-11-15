@@ -11,7 +11,7 @@
 //import net.minecraft.item.BlockItem;
 //import net.minecraft.item.ItemStack;
 //import net.minecraft.tileentity.TileEntity;
-//import net.neoforged.client.model.ModelLoader;
+//import net.neoforged.neoforge.client.model.ModelLoader;
 //import net.neoforged.neoforge.common.config.Configuration;
 //import net.neoforged.neoforge.common.config.Property;
 //import net.neoforged.fml.common.discovery.ASMDataTable;
@@ -227,7 +227,7 @@
 //            }
 //        }
 //
-//        ForgeRegistries.BLOCKS.register(block);
+//        BuiltInRegistries.BLOCK.register(block);
 //
 //        if (feature.hasItemBlock()) {
 //            try {
@@ -235,7 +235,7 @@
 //                BlockItem itemBlock = constructor.newInstance(block);
 //                itemBlock.setRegistryName(feature.getRegistryName());
 //                if (!(itemBlock instanceof IRegistryListener) || ((IRegistryListener) itemBlock).featureParsed(feature)) {
-//                    ForgeRegistries.ITEMS.register(itemBlock);
+//                    BuiltInRegistries.ITEM.register(itemBlock);
 //                }
 //            }
 //            catch (Throwable e) {
@@ -263,7 +263,7 @@
 //            }
 //        }
 //
-//        ForgeRegistries.ITEMS.register(item);
+//        BuiltInRegistries.ITEM.register(item);
 //    }
 //
 //    //endregion

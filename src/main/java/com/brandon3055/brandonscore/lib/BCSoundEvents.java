@@ -9,7 +9,7 @@ public class BCSoundEvents {
 //    public static final SoundEvent portalSound;
 //
 //    private static SoundEvent getRegisteredSoundEvent(String id) {
-//        SoundEvent soundevent = (SoundEvent) SoundEvent.REGISTRY.getObject(new ResourceLocation(id));
+//        SoundEvent soundevent = (SoundEvent) SoundEvent.REGISTRY.getObject(Identifier.parse(id));
 //
 //        if (soundevent == null) {
 //            throw new IllegalStateException("Invalid Sound requested: " + id);

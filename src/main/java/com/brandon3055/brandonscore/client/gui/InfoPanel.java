@@ -1,14 +1,14 @@
 package com.brandon3055.brandonscore.client.gui;
 
-import codechicken.lib.gui.modular.elements.GuiElement;
-import codechicken.lib.gui.modular.elements.GuiRectangle;
-import codechicken.lib.gui.modular.elements.GuiText;
-import codechicken.lib.gui.modular.lib.Constraints;
-import codechicken.lib.gui.modular.lib.GuiRender;
-import codechicken.lib.gui.modular.lib.geometry.Align;
-import codechicken.lib.gui.modular.lib.geometry.Borders;
-import codechicken.lib.gui.modular.lib.geometry.ConstrainedGeometry;
-import codechicken.lib.gui.modular.lib.geometry.GuiParent;
+import com.brandon3055.brandonscore.client.gui.modular.elements.GuiElement;
+import com.brandon3055.brandonscore.client.gui.modular.elements.GuiRectangle;
+import com.brandon3055.brandonscore.client.gui.modular.elements.GuiText;
+import com.brandon3055.brandonscore.client.gui.modular.lib.Constraints;
+import com.brandon3055.brandonscore.client.gui.modular.lib.GuiRender;
+import com.brandon3055.brandonscore.client.gui.modular.lib.geometry.Align;
+import com.brandon3055.brandonscore.client.gui.modular.lib.geometry.Borders;
+import com.brandon3055.brandonscore.client.gui.modular.lib.geometry.ConstrainedGeometry;
+import com.brandon3055.brandonscore.client.gui.modular.lib.geometry.GuiParent;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
@@ -20,8 +20,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static codechicken.lib.gui.modular.lib.geometry.Constraint.*;
-import static codechicken.lib.gui.modular.lib.geometry.GeoParam.*;
+import static com.brandon3055.brandonscore.client.gui.modular.lib.geometry.Constraint.*;
+import static com.brandon3055.brandonscore.client.gui.modular.lib.geometry.GeoParam.*;
 
 public class InfoPanel extends GuiElement<InfoPanel> {
     private static AtomicBoolean globalExpanded = new AtomicBoolean(false);

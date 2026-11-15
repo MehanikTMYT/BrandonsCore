@@ -38,6 +38,11 @@ public class TileDataManager<T extends BlockEntity & IDataManagerProvider> imple
         this.tile = tile;
     }
 
+    @Override
+    public net.minecraft.core.RegistryAccess registryAccess() {
+        return java.util.Objects.requireNonNull(tile.getLevel(), "Tile has no level for managed-data serialization").registryAccess();
+    }
+
     public void setMaxSaveInterval(int maxSaveInterval) {
         this.maxSaveInterval = maxSaveInterval;
     }
@@ -144,7 +149,7 @@ public class TileDataManager<T extends BlockEntity & IDataManagerProvider> imple
 
     @Override
     public PacketCustom createSyncPacket() {
-        PacketCustom packet = new PacketCustom(BCoreNetwork.CHANNEL, BCoreNetwork.C_TILE_DATA_MANAGER);
+        PacketCustom packet = new PacketCustom(BCoreNetwork.CHANNEL, BCoreNetwork.C_TILE_DATA_MANAGER, registryAccess());
         packet.writePos(tile.getBlockPos());
         return packet;
     }
@@ -181,8 +186,8 @@ public class TileDataManager<T extends BlockEntity & IDataManagerProvider> imple
 
     @Override
     public void readFromNBT(CompoundTag compound) {
-        if (compound.contains(BlockBCore.BC_MANAGED_DATA_FLAG, 10)) {
-            CompoundTag dataTag = compound.getCompound(BlockBCore.BC_MANAGED_DATA_FLAG);
+        if ((compound.get(BlockBCore.BC_MANAGED_DATA_FLAG) instanceof net.minecraft.nbt.CompoundTag)) {
+            CompoundTag dataTag = compound.getCompoundOrEmpty(BlockBCore.BC_MANAGED_DATA_FLAG);
             DataUtils.forEachMatch(managedDataList, data -> data.flags().saveNBT, data -> data.fromNBT(dataTag));
         }
     }
@@ -250,8 +255,8 @@ public class TileDataManager<T extends BlockEntity & IDataManagerProvider> imple
     }
 
     public void readSyncNBT(CompoundTag compound) {
-        if (compound.contains(BlockBCore.BC_MANAGED_DATA_FLAG, 10)) {
-            CompoundTag dataTag = compound.getCompound(BlockBCore.BC_MANAGED_DATA_FLAG);
+        if ((compound.get(BlockBCore.BC_MANAGED_DATA_FLAG) instanceof net.minecraft.nbt.CompoundTag)) {
+            CompoundTag dataTag = compound.getCompoundOrEmpty(BlockBCore.BC_MANAGED_DATA_FLAG);
             DataUtils.forEachMatch(managedDataList, data -> data.flags().syncViaPacket(), data -> data.fromNBT(dataTag));
         }
     }
@@ -268,8 +273,8 @@ public class TileDataManager<T extends BlockEntity & IDataManagerProvider> imple
     }
 
     public void readFromStackNBT(CompoundTag compound) {
-        if (compound.contains(BlockBCore.BC_MANAGED_DATA_FLAG, 10)) {
-            CompoundTag dataTag = compound.getCompound(BlockBCore.BC_MANAGED_DATA_FLAG);
+        if ((compound.get(BlockBCore.BC_MANAGED_DATA_FLAG) instanceof net.minecraft.nbt.CompoundTag)) {
+            CompoundTag dataTag = compound.getCompoundOrEmpty(BlockBCore.BC_MANAGED_DATA_FLAG);
             DataUtils.forEachMatch(managedDataList, data -> data.flags().saveItem, data -> data.fromNBT(dataTag));
         }
     }

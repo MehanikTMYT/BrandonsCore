@@ -8,13 +8,13 @@ import net.minecraft.world.level.Level;
 
 /**
  * Created by brandon3055 on 20/07/2016.
- * This will contain some useful utils for handling features (items/blocks) registered via a {@link ModFeatureParser}
+ * This will contain some useful utils for handling features (items/blocks) registered via a {@code ModFeatureParser}
  */
 public class FeatureUtils {
 
     /**
      * Safely spawns an ItemStack in the world after checking that the item/block is enabled.
-     * Also safe to use with any item/block that is not handled by a {@link ModFeatureParser}
+     * Also safe to use with any item/block that is not handled by a {@code ModFeatureParser}
      *
      * @param stack        The stack to spawn in the world
      * @param world        The world
@@ -49,7 +49,7 @@ public class FeatureUtils {
 //        }
 
         ItemEntity entityItem = new ItemEntity(world, dropLocation.x, dropLocation.y, dropLocation.z, stack);
-        entityItem.setDeltaMovement(world.random.nextGaussian() * 0.05, world.random.nextGaussian() * 0.05 + 0.2F, world.random.nextGaussian() * 0.05);
+        entityItem.setDeltaMovement(world.getRandom().nextGaussian() * 0.05, world.getRandom().nextGaussian() * 0.05 + 0.2F, world.getRandom().nextGaussian() * 0.05);
         entityItem.setNoPickUpDelay();
         world.addFreshEntity(entityItem);
     }

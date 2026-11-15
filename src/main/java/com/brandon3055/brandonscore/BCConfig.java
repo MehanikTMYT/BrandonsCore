@@ -10,7 +10,7 @@ import java.util.function.Consumer;
 /**
  * Created by brandon3055 on 19/12/19.
  */
-//@Mod.EventBusSubscriber(modid = BrandonsCore.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
+//@net.neoforged.fml.common.EventBusSubscriber(modid = BrandonsCore.MODID)
 public class BCConfig {
 
     private static ConfigCategory config;

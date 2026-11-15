@@ -3,7 +3,7 @@ package com.brandon3055.brandonscore.mixin;
 import com.brandon3055.brandonscore.BrandonsCore;
 import com.brandon3055.brandonscore.api.ElytraEnabledItem;
 import net.covers1624.quack.util.SneakyUtils;
-import net.minecraft.client.model.PlayerModel;
+
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
@@ -24,18 +24,12 @@ public class PlayerMixin {
         return (Player) (Object) this;
     }
 
-    @SuppressWarnings("InvalidInjectorMethodSignature")
-    @Inject(
-            method = "tryToStartFallFlying",
-            at = @At(
-                    value = "INVOKE_ASSIGN",
-                    target = "Lnet/minecraft/world/entity/player/Player;getItemBySlot(Lnet/minecraft/world/entity/EquipmentSlot;)Lnet/minecraft/world/item/ItemStack;",
-                    shift = At.Shift.AFTER
-            ),
-            locals = LocalCapture.CAPTURE_FAILHARD,
-            cancellable = true
-    )
-    public void tryToStartFallFlying(CallbackInfoReturnable<Boolean> cir, ItemStack itemStack) {
+    @Inject(method = "tryToStartFallFlying()Z", at = @At("HEAD"), cancellable = true)
+    public void tryToStartFallFlying(CallbackInfoReturnable<Boolean> cir) {
+        Player player = getThis();
+        if (player.isFallFlying() || player.onGround() || player.isPassenger() || player.isInWater()
+                || player.getAbilities().flying || player.hasEffect(MobEffects.LEVITATION)) return;
+        ItemStack itemStack = player.getItemBySlot(EquipmentSlot.CHEST);
         if (itemStack.getItem() instanceof ElytraEnabledItem item && item.canElytraFlyBC(itemStack, getThis())) {
             getThis().startFallFlying();
             cir.setReturnValue(true);

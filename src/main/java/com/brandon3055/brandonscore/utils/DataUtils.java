@@ -59,13 +59,13 @@ public class DataUtils {
 
     /**
      * Shift all objects in an array by the number of places specified.
-     * <p/>
+     * <p>
      * Example:
      * Object[] array = {1, 2, 3, 4, 5}
      * array = arrayShift(array, 1);
      * array now equals {5, 1, 2, 3, 4}
      * Shift can be a positive or negative number
-     * <p/>
+     * <p>
      * Shift is not restricted to any max or min value so it could for example be linked to a counter that
      * continuously increments.
      */

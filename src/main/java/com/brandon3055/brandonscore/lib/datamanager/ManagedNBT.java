@@ -23,7 +23,7 @@ public class ManagedNBT extends AbstractManagedData<CompoundTag> {
     }
 
     /**
-     * Default empty {@link CompoundNBT}
+     * Default empty {@code CompoundNBT}
      */
     public ManagedNBT(String name, DataFlags... flags) {
         this(name, new CompoundTag(), flags);
@@ -105,7 +105,7 @@ public class ManagedNBT extends AbstractManagedData<CompoundTag> {
 
     @Override
     public void fromNBT(CompoundTag compound) {
-        value = compound.getCompound(name);
+        value = compound.getCompoundOrEmpty(name);
         notifyListeners(value);
     }
 

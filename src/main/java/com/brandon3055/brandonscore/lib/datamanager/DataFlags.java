@@ -47,7 +47,7 @@ public class DataFlags {
     public static DataFlags SYNC_ON_SET = new DataFlags(false, false, false, false, false, true, false, false);
 
     /**
-     * If set this flag will allow changes to be pushed from the client to the server. This is useful for things like gui controls <strong>BUT<strong/>
+     * If set this flag will allow changes to be pushed from the client to the server. This is useful for things like gui controls <strong>BUT</strong>
      * It should be used with caution! Do not use this on a field you dont want the player to modify because it would only take a simple client hack to exploit this.
      * This should also add a dataValidator to ensure the server has the last say if the client tries to sent a value outside your defined range.
      *

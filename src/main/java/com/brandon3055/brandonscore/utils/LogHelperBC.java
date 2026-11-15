@@ -296,11 +296,11 @@ public class LogHelperBC {
     }
 
     public static void logNBTDev(ItemStack stack) {
-        logNBTDev(stack.getTag());
+        logNBTDev(com.brandon3055.brandonscore.utils.ItemNBTHelper.getCompound(stack));
     }
 
     public static void logNBT(ItemStack stack) {
-        logNBTDev(stack.getTag());
+        logNBTDev(com.brandon3055.brandonscore.utils.ItemNBTHelper.getCompound(stack));
     }
 
     public static void logNBT(CompoundTag compound, boolean debug) {
@@ -321,7 +321,7 @@ public class LogHelperBC {
     public static void buildNBT(StringBuilder builder, Tag nbt, String indent, String name, boolean comma) {
         if (nbt instanceof CompoundTag) {
             builder.append("\n[NBT]: ").append(indent).append(name).append(":{");
-            Set<String> keys = ((CompoundTag) nbt).getAllKeys();
+            Set<String> keys = ((CompoundTag) nbt).keySet();
             int index = 0;
             for (String key : keys) {
                 index++;

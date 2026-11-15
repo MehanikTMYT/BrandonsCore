@@ -102,12 +102,12 @@ public class ManagedStack extends AbstractManagedData<ItemStack> {
 
     @Override
     public void toNBT(CompoundTag compound) {
-        compound.put(name, value.save(new CompoundTag()));
+        compound.store(name, ItemStack.OPTIONAL_CODEC, dataManager.registryAccess().createSerializationContext(net.minecraft.nbt.NbtOps.INSTANCE), value);
     }
 
     @Override
     public void fromNBT(CompoundTag compound) {
-        value = ItemStack.of(compound.getCompound(name));
+        value = compound.read(name, ItemStack.OPTIONAL_CODEC, dataManager.registryAccess().createSerializationContext(net.minecraft.nbt.NbtOps.INSTANCE)).orElse(ItemStack.EMPTY);
         notifyListeners(value);
     }
 

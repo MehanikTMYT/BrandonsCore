@@ -109,10 +109,10 @@ public class ManagedVector3 extends AbstractManagedData<Vector3> {
 
     @Override
     public void fromNBT(CompoundTag compound) {
-        if (!compound.contains(name, 10)) {
+        if (!(compound.get(name) instanceof net.minecraft.nbt.CompoundTag)) {
             value = defaultValue == null ? null : defaultValue.copy();
         } else {
-            CompoundTag nbt = compound.getCompound(name);
+            CompoundTag nbt = compound.getCompoundOrEmpty(name);
             if (nbt.contains("null")){
                 value = null;
             } else {

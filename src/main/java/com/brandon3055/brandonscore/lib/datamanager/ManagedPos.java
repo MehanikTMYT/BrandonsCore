@@ -97,7 +97,12 @@ public class ManagedPos extends AbstractManagedData<BlockPos> {
 
     @Override
     public void toNBT(CompoundTag compound) {
-        CompoundTag nbt = value == null ? new CompoundTag() : NbtUtils.writeBlockPos(value);
+        CompoundTag nbt = new CompoundTag();
+        if (value != null) {
+            nbt.putInt("X", value.getX());
+            nbt.putInt("Y", value.getY());
+            nbt.putInt("Z", value.getZ());
+        }
         if (value == null) {
             nbt.putBoolean("null", true);
         }
@@ -106,14 +111,14 @@ public class ManagedPos extends AbstractManagedData<BlockPos> {
 
     @Override
     public void fromNBT(CompoundTag compound) {
-        if (!compound.contains(name, 10)) {
+        if (!(compound.get(name) instanceof net.minecraft.nbt.CompoundTag)) {
             value = defaultValue == null ? null : new BlockPos(defaultValue);
         }else {
-            CompoundTag nbt = compound.getCompound(name);
+            CompoundTag nbt = compound.getCompoundOrEmpty(name);
             if (nbt.contains("null")) {
                 value = null;
             } else {
-                value = NbtUtils.readBlockPos(nbt);
+                value = new BlockPos(nbt.getIntOr("X", 0), nbt.getIntOr("Y", 0), nbt.getIntOr("Z", 0));
             }
         }
         notifyListeners(value);

@@ -12,12 +12,12 @@ import java.util.function.Function;
 /**
  * Created by brandon3055 on 12/06/2017.
  */
-public class ManagedResource extends AbstractManagedData<ResourceLocation> {
+public class ManagedResource extends AbstractManagedData<Identifier> {
 
-    private ResourceLocation value;
-    protected Function<ResourceLocation, ResourceLocation> validator = null;
+    private Identifier value;
+    protected Function<Identifier, Identifier> validator = null;
 
-    public ManagedResource(String name, @Nullable ResourceLocation defaultValue, DataFlags... flags) {
+    public ManagedResource(String name, @Nullable Identifier defaultValue, DataFlags... flags) {
         super(name, flags);
         this.value = defaultValue;
     }
@@ -29,10 +29,10 @@ public class ManagedResource extends AbstractManagedData<ResourceLocation> {
         this(name, null, flags);
     }
 
-    public ResourceLocation set(@Nullable ResourceLocation value) {
+    public Identifier set(@Nullable Identifier value) {
         if (!Objects.equals(this.value, value)) {
             boolean set = true;
-            ResourceLocation prev = this.value;
+            Identifier prev = this.value;
             this.value = value;
 
             if (dataManager.isClientSide() && flags.allowClientControl) {
@@ -53,7 +53,7 @@ public class ManagedResource extends AbstractManagedData<ResourceLocation> {
     }
 
     @Nullable
-    public ResourceLocation get() {
+    public Identifier get() {
         return value;
     }
 
@@ -63,7 +63,7 @@ public class ManagedResource extends AbstractManagedData<ResourceLocation> {
      * @param validator a validator function that takes an input, applies restrictions if needed then returns the updated value.
      * @return
      */
-    public ManagedResource setValidator(Function<ResourceLocation, ResourceLocation> validator) {
+    public ManagedResource setValidator(Function<Identifier, Identifier> validator) {
         this.validator = validator;
         return this;
     }
@@ -103,7 +103,7 @@ public class ManagedResource extends AbstractManagedData<ResourceLocation> {
     @Override
     public void fromNBT(CompoundTag compound) {
         if (compound.contains(name)) {
-            value = new ResourceLocation(compound.getString(name));
+            value = Identifier.parse(compound.getStringOr(name, ""));
         } else {
             value = null;
         }

@@ -6,8 +6,8 @@ package com.brandon3055.brandonscore.utils;
  *
  * @author Stefan Gustavson, Linkping University, Sweden (stegu at itn dot liu
  *         dot se)
- *         <p/>
- *         Slight optimizations & restructuring by
+ *         <p>
+ *         Slight optimizations &amp; restructuring by
  * @author Karsten Schmidt (info at toxi dot co dot uk)
  */
 

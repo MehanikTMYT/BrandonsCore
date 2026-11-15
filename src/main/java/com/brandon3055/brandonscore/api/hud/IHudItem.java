@@ -17,7 +17,7 @@ public interface IHudItem extends IHudDisplay {
 
     /**
      * Note: The hud is entirely handled client side so your hud data must be available on the client.
-     * Each {@link ITextComponent} will be rendered as its own line on the hud. There is no line wrapping.
+     * Each {@code ITextComponent} will be rendered as its own line on the hud. There is no line wrapping.
      *
      * @param stack       The ItemStack the player is holding (this item)
      * @param player      The player holding the item.

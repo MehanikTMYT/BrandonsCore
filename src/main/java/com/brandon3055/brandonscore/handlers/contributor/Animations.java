@@ -67,9 +67,8 @@ public class Animations {
         playerExpiry = 0;
     }
 
-    @OnlyIn(Dist.CLIENT)
     public void tick() {
-        Boolean paused = DistExecutor.unsafeCallWhenOn(Dist.CLIENT, () -> ClientOnly::isClientPaused);
+        Boolean paused = net.neoforged.fml.loading.FMLEnvironment.getDist() == Dist.CLIENT && ClientOnly.isClientPaused();
         if (paused != null && paused) return;
         ContributorConfig config = props.getConfig();
         if (config.getWingRGBBoneColour()) {
@@ -113,9 +112,9 @@ public class Animations {
         hideWings = false;
         float hideSpeed = 0.1F;
         ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
-        boolean hasElytra = chest.getItem().canElytraFly(chest, player);
+        boolean hasElytra = net.minecraft.world.entity.LivingEntity.canGlideUsing(chest, EquipmentSlot.CHEST);
         if (!hasElytra && BrandonsCore.equipmentManager != null) {
-            hasElytra = !BrandonsCore.equipmentManager.findMatchingItem(e -> e.getItem().canElytraFly(e, player), player).isEmpty();
+            hasElytra = !BrandonsCore.equipmentManager.findMatchingItem(e -> net.minecraft.world.entity.LivingEntity.canGlideUsing(e, EquipmentSlot.CHEST), player).isEmpty();
         }
 
         if (config.getWingsTier() == null || (hasElytra && config.getWingsElytra() == ContributorConfig.WingElytraCompat.HIDE_WINGS)) {

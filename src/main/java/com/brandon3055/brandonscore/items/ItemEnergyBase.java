@@ -1,3 +1,4 @@
+import net.minecraft.nbt.CompoundTag;
 //package com.brandon3055.brandonscore.items;
 //
 //
@@ -16,7 +17,7 @@
 //import net.neoforged.api.distmarker.Dist;
 //import net.neoforged.api.distmarker.OnlyIn;
 //import net.neoforged.neoforge.capabilities.ICapabilityProvider;
-//import com.brandon3055.brandonscore.lib.Optional;
+//import java.util.Optional;
 //
 //import javax.annotation.Nullable;
 //import java.util.List;

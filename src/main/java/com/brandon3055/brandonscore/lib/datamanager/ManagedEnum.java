@@ -114,12 +114,12 @@ public class ManagedEnum<T extends Enum<T>> extends AbstractManagedData<T> {
 
     @Override
     public void fromNBT(CompoundTag compound) {
-        if (compound.contains(name, 10)) {
-            CompoundTag nbt = compound.getCompound(name);
+        if ((compound.get(name) instanceof net.minecraft.nbt.CompoundTag)) {
+            CompoundTag nbt = compound.getCompoundOrEmpty(name);
             if (nbt.contains("null")) {
                 value = null;
             } else {
-                value = indexToValue.get(MathHelper.clip(nbt.getByte("value") & 0xFF, 0, indexToValue.size() - 1));
+                value = indexToValue.get(MathHelper.clip(nbt.getByteOr("value", (byte) 0) & 0xFF, 0, indexToValue.size() - 1));
             }
         }
         notifyListeners(value);

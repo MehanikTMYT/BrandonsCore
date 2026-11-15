@@ -1,7 +1,7 @@
 package com.brandon3055.brandonscore.inventory;
 
 import codechicken.lib.data.MCDataInput;
-import codechicken.lib.inventory.container.modular.ModularGuiContainerMenu;
+import com.brandon3055.brandonscore.client.gui.modular.lib.container.ModularGuiContainerMenu;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -12,9 +12,8 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import com.brandon3055.brandonscore.lib.Optional;
+import java.util.Optional;
 import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.wrapper.EmptyHandler;
 
 import javax.annotation.Nullable;
 import java.util.List;

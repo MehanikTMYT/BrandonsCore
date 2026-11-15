@@ -1,10 +1,10 @@
 package com.brandon3055.brandonscore.client.gui.modulargui.templates;
 
-import codechicken.lib.gui.modular.ModularGui;
-import codechicken.lib.gui.modular.elements.GuiButton;
-import codechicken.lib.gui.modular.elements.GuiElement;
-import codechicken.lib.gui.modular.elements.GuiEnergyBar;
-import codechicken.lib.gui.modular.elements.GuiText;
+import com.brandon3055.brandonscore.client.gui.modular.ModularGui;
+import com.brandon3055.brandonscore.client.gui.modular.elements.GuiButton;
+import com.brandon3055.brandonscore.client.gui.modular.elements.GuiElement;
+import com.brandon3055.brandonscore.client.gui.modular.elements.GuiEnergyBar;
+import com.brandon3055.brandonscore.client.gui.modular.elements.GuiText;
 import com.brandon3055.brandonscore.api.power.IOPStorage;
 import com.brandon3055.brandonscore.client.gui.GuiToolkit;
 import com.brandon3055.brandonscore.inventory.SlotMover;
