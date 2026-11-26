@@ -47,14 +47,17 @@ public class OPWrappers {
             }
         }
 
+        // 26.1: IEnergyStorage.of(EnergyHandler) only guesses these from capacity > 0, which says "no" for
+        // zero-buffer cables (e.g. Powah) so nothing was ever pushed into them. Insert/extract already return 0
+        // when the handler refuses, so just let them try.
         @Override
         public boolean canExtract() {
-            return storage.canExtract();
+            return true;
         }
 
         @Override
         public boolean canReceive() {
-            return storage.canReceive();
+            return true;
         }
     }
 }
