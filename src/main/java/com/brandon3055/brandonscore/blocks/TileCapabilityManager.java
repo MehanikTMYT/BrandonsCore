@@ -205,6 +205,19 @@ public class TileCapabilityManager implements BCapabilityProvider {
         }
     }
 
+    /**
+     * Send every container-synced capability to one player, whether it changed or not. Change detection is shared by
+     * all viewers, so without this a player opening the screen of a block whose value has not changed since the last
+     * sync (a full energy buffer, say) never receives it and sees 0.
+     */
+    public void forcePlayerSync(ServerPlayer player) {
+        if (tile.getLevel() == null || tile.getLevel().isClientSide()) return;
+        for (int i = 0; i < indexedDataList.size(); i++) {
+            SerializationFlags<?> helper = indexedDataList.get(i);
+            if (helper.syncContainer) createCapPacket(helper, i).sendToPlayer(player);
+        }
+    }
+
     public void detectAndSendChangesToListeners(Collection<Player> listeners) {
         for (int i = 0; i < indexedDataList.size(); i++) {
             SerializationFlags<?> helper = indexedDataList.get(i);

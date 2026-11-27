@@ -1159,6 +1159,11 @@ public class GuiRender {
 
     //=== Strings ===//
 
+    // 26.1 skips text whose alpha byte is 0; older code passes plain 0xRRGGBB, which used to mean opaque.
+    private static int opaque(int colour) {
+        return (colour & 0xFC000000) == 0 ? colour | 0xFF000000 : colour;
+    }
+
     /**
      * Draw string with shadow.
      */
@@ -1168,7 +1173,8 @@ public class GuiRender {
 
     public int drawString(@Nullable String message, double x, double y, int colour, boolean shadow) {
         if (message == null) return 0;
-        extract(() -> extractor.text(font(), message, (int) x, (int) y, colour, shadow));
+        int argb = opaque(colour);
+        extract(() -> extractor.text(font(), message, (int) x, (int) y, argb, shadow));
         return (int) x + font().width(message);
     }
 
@@ -1180,7 +1186,8 @@ public class GuiRender {
     }
 
     public int drawString(FormattedCharSequence message, double x, double y, int colour, boolean shadow) {
-        extract(() -> extractor.text(font(), message, (int) x, (int) y, colour, shadow));
+        int argb = opaque(colour);
+        extract(() -> extractor.text(font(), message, (int) x, (int) y, argb, shadow));
         return (int) x + font().width(message);
     }
 

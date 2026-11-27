@@ -43,6 +43,12 @@ public abstract class ContainerBCTile<T extends TileBCore> extends ModularGuiCon
         this.player = playerInv.player;
         this.tile = tile;
         this.tile.onPlayerOpenContainer(playerInv.player);
+        // 26.1 passes ServerPlayer.containerListener (not the player) to addSlotListener, so the force sync there
+        // never ran. Send the screen's current data and capabilities when the server builds the menu instead.
+        if (playerInv.player instanceof ServerPlayer sp) {
+            tile.getDataManager().forcePlayerSync(sp);
+            tile.getCapManager().forcePlayerSync(sp);
+        }
     }
 
     @Override
