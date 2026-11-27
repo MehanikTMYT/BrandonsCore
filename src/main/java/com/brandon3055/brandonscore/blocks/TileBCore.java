@@ -497,18 +497,19 @@ public class TileBCore extends BlockEntity implements com.brandon3055.brandonsco
         if (itemHandler instanceof TileItemStackHandler) {
             ((TileItemStackHandler) itemHandler).setSlotValidator(slot, stack -> (chargeItem.get() ? EnergyUtils.canReceiveEnergy(stack) : EnergyUtils.canExtractEnergy(stack)));
         }
-        if (EffectiveSide.get().isServer()) {
-            addTickable(() -> {
-                ItemStack stack = itemHandler.getStackInSlot(slot);
-                if (!stack.isEmpty()) {
-                    if (chargeItem.get()) {
-                        EnergyUtils.transferEnergy(storage, stack);
-                    } else {
-                        EnergyUtils.transferEnergy(stack, storage);
-                    }
+        // Side is checked each tick, not here: tiles loaded from a save are built on chunk-loading worker threads, where
+        // EffectiveSide reports the client, so the slot never charged or discharged after a reload.
+        addTickable(() -> {
+            if (level == null || level.isClientSide()) return;
+            ItemStack stack = itemHandler.getStackInSlot(slot);
+            if (!stack.isEmpty()) {
+                if (chargeItem.get()) {
+                    EnergyUtils.transferEnergy(storage, stack);
+                } else {
+                    EnergyUtils.transferEnergy(stack, storage);
                 }
-            });
-        }
+            }
+        });
     }
 
 
