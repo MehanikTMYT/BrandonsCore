@@ -65,25 +65,43 @@ public class ModularGuiContainer<T extends AbstractContainerMenu> extends Abstra
     @Override
     protected void init() {
         modularGui.onScreenInit(minecraft, font, width, height);
+        syncBounds();
     }
 
     @Override
     public void resize(int width, int height) {
         super.resize(width, height);
         modularGui.onScreenInit(minecraft, font, width, height);
+        syncBounds();
+    }
+
+    /**
+     * Report the real GUI box to JEI. leftPos/topPos were only set on the first frame (0 until then) and the size
+     * getters returned vanilla's 176x166, so JEI laid its item list out against the wrong box and showed only its
+     * search field.
+     */
+    private void syncBounds() {
+        GuiElement<?> root = modularGui.getRoot();
+        leftPos = (int) root.getValue(GeoParam.LEFT);
+        topPos = (int) root.getValue(GeoParam.TOP);
+    }
+
+    // imageWidth/imageHeight are final (vanilla 176x166); report the real size through the getters JEI uses.
+    @Override public int getImageWidth() { return (int) modularGui.getRoot().xSize(); }
+    @Override public int getImageHeight() { return (int) modularGui.getRoot().ySize(); }
+
+    @Override
+    public void extractBackground(@NotNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
+        if (modularGui.renderBackground()) {
+            super.extractBackground(graphics, mouseX, mouseY, partialTicks);
+        }
     }
 
     @Override
     public void extractRenderState(@NotNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
-        GuiElement<?> root = modularGui.getRoot();
-        topPos = (int) root.getValue(GeoParam.TOP);
-        leftPos = (int) root.getValue(GeoParam.LEFT);
+        syncBounds(); // the GUI can move (GuiManipulable) or resize
 
 
-        if (modularGui.renderBackground()) {
-            //Called here to ensure background renders before modularGui elements.
-            super.extractBackground(graphics, mouseX, mouseY, partialTicks);
-        }
         GuiRender render = GuiRender.convert(graphics);
         modularGui.render(render, partialTicks);
 
